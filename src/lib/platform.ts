@@ -30,10 +30,15 @@ export type RoleAssignment = {
   id: string;
   role: PlatformRole;
   schoolId: string | null;
+  regionId: string | null;
+  countryId: string | null;
   accessLevel: number;
 };
 
 export type SchoolSummary = { id: string; name: string; code: string; region: string | null };
+
+/** Where in the hierarchy this person sits. Drives routing and the dashboard name. */
+export type Scope = "platform" | "national" | "regional" | "school";
 
 export type PlatformIdentity = {
   userId: string;
@@ -42,6 +47,11 @@ export type PlatformIdentity = {
   assignments: RoleAssignment[];
   /** Platform-wide actors see the whole nation; school actors see one school. */
   platformWide: boolean;
+  scope: Scope;
+  /** Name shown as the dashboard title: platform / country / region / school. */
+  scopeLabel: string;
+  countryId: string | null;
+  regionId: string | null;
   schoolIds: string[];
   activeSchoolId: string | null;
   /** Portal role, mapped onto the app's existing 5-role access model. */
@@ -89,12 +99,41 @@ export function isPlatformRole(role: PlatformRole) {
   return role === "super_admin" || role === "national_admin";
 }
 
-/**
- * The two layers of the ecosystem are separate destinations:
- * national oversight (all registered schools) vs. a single school workspace.
- */
-export function landingRoute(identity: PlatformIdentity | null): "/national" | "/portal" {
-  return identity?.platformWide ? "/national" : "/portal";
+export const SCOPE_ROUTE = {
+  platform: "/platform",
+  national: "/national",
+  regional: "/regional",
+  school: "/portal",
+} as const;
+
+/** Every layer of the hierarchy has its own dashboard. */
+export function landingRoute(
+  identity: PlatformIdentity | null,
+): "/platform" | "/national" | "/regional" | "/portal" {
+  return identity ? SCOPE_ROUTE[identity.scope] : "/portal";
+}
+
+async function resolveScopeLabel(
+  scope: Scope,
+  ids: { countryId: string | null; regionId: string | null; schoolId: string | null },
+): Promise<string> {
+  if (scope === "national" && ids.countryId) {
+    const { data } = await supabase.from("countries").select("name").eq("id", ids.countryId).maybeSingle();
+    if (data?.name) return data.name;
+  }
+  if (scope === "regional" && ids.regionId) {
+    const { data } = await supabase.from("regions").select("name").eq("id", ids.regionId).maybeSingle();
+    if (data?.name) return data.name;
+  }
+  if (scope === "school" && ids.schoolId) {
+    const { data } = await supabase.from("schools").select("name").eq("id", ids.schoolId).maybeSingle();
+    if (data?.name) return data.name;
+  }
+  const { data: settings } = await supabase
+    .from("platform_settings")
+    .select("platform_name")
+    .maybeSingle();
+  return settings?.platform_name ?? "EduNat";
 }
 
 async function loadIdentity(): Promise<PlatformIdentity | null> {
@@ -104,25 +143,49 @@ async function loadIdentity(): Promise<PlatformIdentity | null> {
 
   const { data: rows } = await supabase
     .from("user_roles")
-    .select("id, role, school_id, access_level")
+    .select("id, role, school_id, region_id, country_id, access_level")
     .eq("user_id", user.id);
 
   const assignments: RoleAssignment[] = (rows ?? []).map((r) => ({
     id: r.id,
     role: r.role as PlatformRole,
     schoolId: r.school_id,
+    regionId: r.region_id,
+    countryId: r.country_id,
     accessLevel: r.access_level,
   }));
-
-  const platformWide = assignments.some((a) => a.schoolId === null && isPlatformRole(a.role));
-  const schoolIds = [...new Set(assignments.filter((a) => a.schoolId).map((a) => a.schoolId!))];
-  const stored = readStoredSchoolId();
-  const activeSchoolId =
-    stored && (platformWide || schoolIds.includes(stored)) ? stored : (schoolIds[0] ?? null);
 
   const strongest =
     RANK.find((role) => assignments.some((a) => a.role === role)) ?? ("student" as PlatformRole);
   const portalRole = PORTAL_ROLE[strongest];
+
+  const scope: Scope =
+    strongest === "super_admin"
+      ? "platform"
+      : strongest === "national_admin"
+        ? "national"
+        : strongest === "regional_admin"
+          ? "regional"
+          : "school";
+
+  const nationalRow = assignments.find((a) => a.role === "national_admin");
+  const regionalRow = assignments.find((a) => a.role === "regional_admin");
+  const countryId = nationalRow?.countryId ?? null;
+  const regionId = regionalRow?.regionId ?? null;
+
+  const platformWide = scope === "platform" || scope === "national";
+  const schoolIds = [...new Set(assignments.filter((a) => a.schoolId).map((a) => a.schoolId!))];
+  const stored = readStoredSchoolId();
+  const activeSchoolId =
+    stored && (platformWide || scope === "regional" || schoolIds.includes(stored))
+      ? stored
+      : (schoolIds[0] ?? null);
+
+  const scopeLabel = await resolveScopeLabel(scope, {
+    countryId,
+    regionId,
+    schoolId: activeSchoolId,
+  });
 
   return {
     userId: user.id,
@@ -130,6 +193,10 @@ async function loadIdentity(): Promise<PlatformIdentity | null> {
     fullName: (user.user_metadata?.["full_name"] as string | undefined) ?? null,
     assignments,
     platformWide,
+    scope,
+    scopeLabel,
+    countryId,
+    regionId,
     schoolIds,
     activeSchoolId,
     portalRole,
