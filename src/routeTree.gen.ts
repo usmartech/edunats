@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ConfigRouteImport } from './routes/config'
+import { Route as NationalRouteImport } from './routes/national'
+import { Route as PortalRouteImport } from './routes/portal'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SetupRouteImport } from './routes/setup'
+import { Route as StaffRouteImport } from './routes/staff'
+import { Route as ModulesModuleKeyRouteImport } from './routes/modules.$moduleKey'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfigRoute = ConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalRoute = NationalRouteImport.update({
+  id: '/national',
+  path: '/national',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModulesModuleKeyRoute = ModulesModuleKeyRouteImport.update({
+  id: '/modules/$moduleKey',
+  path: '/modules/$moduleKey',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/config': typeof ConfigRoute
+  '/national': typeof NationalRoute
+  '/portal': typeof PortalRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
+  '/staff': typeof StaffRoute
+  '/modules/$moduleKey': typeof ModulesModuleKeyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/config': typeof ConfigRoute
+  '/national': typeof NationalRoute
+  '/portal': typeof PortalRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
+  '/staff': typeof StaffRoute
+  '/modules/$moduleKey': typeof ModulesModuleKeyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/config': typeof ConfigRoute
+  '/national': typeof NationalRoute
+  '/portal': typeof PortalRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
+  '/staff': typeof StaffRoute
+  '/modules/$moduleKey': typeof ModulesModuleKeyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/config'
+    | '/national'
+    | '/portal'
+    | '/reset-password'
+    | '/setup'
+    | '/staff'
+    | '/modules/$moduleKey'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/config'
+    | '/national'
+    | '/portal'
+    | '/reset-password'
+    | '/setup'
+    | '/staff'
+    | '/modules/$moduleKey'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/config'
+    | '/national'
+    | '/portal'
+    | '/reset-password'
+    | '/setup'
+    | '/staff'
+    | '/modules/$moduleKey'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  ConfigRoute: typeof ConfigRoute
+  NationalRoute: typeof NationalRoute
+  PortalRoute: typeof PortalRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SetupRoute: typeof SetupRoute
+  StaffRoute: typeof StaffRoute
+  ModulesModuleKeyRoute: typeof ModulesModuleKeyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/config': {
+      id: '/config'
+      path: '/config'
+      fullPath: '/config'
+      preLoaderRoute: typeof ConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national': {
+      id: '/national'
+      path: '/national'
+      fullPath: '/national'
+      preLoaderRoute: typeof NationalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/modules/$moduleKey': {
+      id: '/modules/$moduleKey'
+      path: '/modules/$moduleKey'
+      fullPath: '/modules/$moduleKey'
+      preLoaderRoute: typeof ModulesModuleKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  ConfigRoute: ConfigRoute,
+  NationalRoute: NationalRoute,
+  PortalRoute: PortalRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SetupRoute: SetupRoute,
+  StaffRoute: StaffRoute,
+  ModulesModuleKeyRoute: ModulesModuleKeyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
