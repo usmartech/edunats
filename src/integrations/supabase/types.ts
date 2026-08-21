@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          detail: Json
+          id: string
+          scope: string
+          scope_id: string | null
+          target_id: string | null
+          target_table: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          scope?: string
+          scope_id?: string | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          scope?: string
+          scope_id?: string | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Relationships: []
+      }
+      countries: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       education_levels: {
         Row: {
           active: boolean
@@ -46,6 +109,42 @@ export type Database = {
           min_age?: number | null
           name?: string
           order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          auto_approve_registrations: boolean
+          created_at: string
+          id: string
+          logo_url: string | null
+          platform_name: string
+          singleton: boolean
+          support_email: string | null
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          auto_approve_registrations?: boolean
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          platform_name?: string
+          singleton?: boolean
+          support_email?: string | null
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_approve_registrations?: boolean
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          platform_name?: string
+          singleton?: boolean
+          support_email?: string | null
+          tagline?: string
           updated_at?: string
         }
         Relationships: []
@@ -105,6 +204,126 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "records_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      regions: {
+        Row: {
+          active: boolean
+          code: string
+          country_id: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          country_id: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          country_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regions_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_registrations: {
+        Row: {
+          contact_phone: string | null
+          country_id: string | null
+          created_at: string
+          district: string | null
+          id: string
+          level_codes: string[]
+          proposed_code: string
+          region_id: string | null
+          rejection_reason: string | null
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          school_id: string | null
+          school_name: string
+          status: string
+          type_code: string
+          updated_at: string
+        }
+        Insert: {
+          contact_phone?: string | null
+          country_id?: string | null
+          created_at?: string
+          district?: string | null
+          id?: string
+          level_codes?: string[]
+          proposed_code: string
+          region_id?: string | null
+          rejection_reason?: string | null
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id?: string | null
+          school_name: string
+          status?: string
+          type_code?: string
+          updated_at?: string
+        }
+        Update: {
+          contact_phone?: string | null
+          country_id?: string | null
+          created_at?: string
+          district?: string | null
+          id?: string
+          level_codes?: string[]
+          proposed_code?: string
+          region_id?: string | null
+          rejection_reason?: string | null
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id?: string | null
+          school_name?: string
+          status?: string
+          type_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_registrations_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_registrations_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_registrations_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
@@ -179,7 +398,9 @@ export type Database = {
           active: boolean
           code: string
           country: string
+          country_id: string | null
           created_at: string
+          created_by: string | null
           currency: string
           district: string | null
           id: string
@@ -187,6 +408,8 @@ export type Database = {
           locale: string
           name: string
           region: string | null
+          region_id: string | null
+          status: string
           timezone: string
           type_code: string
           updated_at: string
@@ -195,7 +418,9 @@ export type Database = {
           active?: boolean
           code: string
           country?: string
+          country_id?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           district?: string | null
           id?: string
@@ -203,6 +428,8 @@ export type Database = {
           locale?: string
           name: string
           region?: string | null
+          region_id?: string | null
+          status?: string
           timezone?: string
           type_code?: string
           updated_at?: string
@@ -211,7 +438,9 @@ export type Database = {
           active?: boolean
           code?: string
           country?: string
+          country_id?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           district?: string | null
           id?: string
@@ -219,38 +448,75 @@ export type Database = {
           locale?: string
           name?: string
           region?: string | null
+          region_id?: string | null
+          status?: string
           timezone?: string
           type_code?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "schools_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schools_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
           access_level: number
+          country_id: string | null
           created_at: string
           id: string
+          region_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           school_id: string | null
           user_id: string
         }
         Insert: {
           access_level?: number
+          country_id?: string | null
           created_at?: string
           id?: string
+          region_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
           school_id?: string | null
           user_id: string
         }
         Update: {
           access_level?: number
+          country_id?: string | null
           created_at?: string
           id?: string
+          region_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           school_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_roles_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_roles_school_id_fkey"
             columns: ["school_id"]
@@ -280,7 +546,16 @@ export type Database = {
         Args: { _school_id: string; _user_id: string }
         Returns: boolean
       }
+      is_national_admin: {
+        Args: { _country_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_platform_bootstrapped: { Args: never; Returns: boolean }
+      is_regional_admin: {
+        Args: { _region_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_school_admin: {
         Args: { _school_id: string; _user_id: string }
         Returns: boolean
@@ -292,16 +567,22 @@ export type Database = {
           active: boolean
           configured: boolean
           country: string
+          country_id: string
           last_activity: string
           level_codes: string[]
           record_count: number
           region: string
+          region_id: string
           school_code: string
           school_id: string
           school_name: string
           staff_count: number
           type_code: string
         }[]
+      }
+      school_in_scope: {
+        Args: { _school_id: string; _user_id: string }
+        Returns: boolean
       }
     }
     Enums: {
