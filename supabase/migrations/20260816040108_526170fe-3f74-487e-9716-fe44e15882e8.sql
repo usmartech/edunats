@@ -1,0 +1,12 @@
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.is_platform_admin(uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.is_super_admin(uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.has_school_access(uuid, uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.can_write_school(uuid, uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.national_overview() FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.touch_updated_at() FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.has_school_access(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_platform_admin(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.national_overview() TO authenticated;

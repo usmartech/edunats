@@ -59,24 +59,40 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-surface-deep: var(--surface-deep);
+  --color-role-super: var(--role-super);
+  --color-role-admin: var(--role-admin);
+  --color-role-staff: var(--role-staff);
+  --color-role-student: var(--role-student);
+  --color-role-parent: var(--role-parent);
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.875rem;
+  --background: oklch(0.985 0.008 200);
+  --foreground: oklch(0.24 0.045 235);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.24 0.045 235);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.24 0.045 235);
+  --primary: oklch(0.46 0.11 215);
+  --primary-foreground: oklch(0.99 0.005 200);
+  --secondary: oklch(0.94 0.02 205);
+  --secondary-foreground: oklch(0.3 0.05 230);
+  --muted: oklch(0.955 0.012 205);
+  --muted-foreground: oklch(0.52 0.03 230);
+  --accent: oklch(0.72 0.13 75);
+  --accent-foreground: oklch(0.22 0.05 60);
+  --surface-deep: oklch(0.26 0.055 240);
+  --role-super: oklch(0.55 0.19 22);
+  --role-admin: oklch(0.52 0.13 165);
+  --role-staff: oklch(0.5 0.15 250);
+  --role-student: oklch(0.55 0.16 300);
+  --role-parent: oklch(0.62 0.16 55);
+  --gradient-hero: linear-gradient(135deg, oklch(0.26 0.055 240) 0%, oklch(0.36 0.09 215) 55%, oklch(0.44 0.1 195) 100%);
+  --shadow-card: 0 4px 12px oklch(0.24 0.045 235 / 0.08);
+  --shadow-lift: 0 14px 34px oklch(0.24 0.045 235 / 0.18);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(0.929 0.013 255.508);
@@ -141,4 +157,16 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+}
+
+@utility hero-gradient {
+  background-image: var(--gradient-hero);
+}
+
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+@utility shadow-lift {
+  box-shadow: var(--shadow-lift);
 }
