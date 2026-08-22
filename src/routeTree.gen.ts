@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as NationalRouteImport } from './routes/national'
+import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SetupRouteImport } from './routes/setup'
@@ -37,6 +38,11 @@ const ConfigRoute = ConfigRouteImport.update({
 const NationalRoute = NationalRouteImport.update({
   id: '/national',
   path: '/national',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalRoute = PortalRouteImport.update({
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
   '/national': typeof NationalRoute
+  '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
   '/national': typeof NationalRoute
+  '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
   '/national': typeof NationalRoute
+  '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/config'
     | '/national'
+    | '/platform'
     | '/portal'
     | '/reset-password'
     | '/setup'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/config'
     | '/national'
+    | '/platform'
     | '/portal'
     | '/reset-password'
     | '/setup'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/config'
     | '/national'
+    | '/platform'
     | '/portal'
     | '/reset-password'
     | '/setup'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ConfigRoute: typeof ConfigRoute
   NationalRoute: typeof NationalRoute
+  PlatformRoute: typeof PlatformRoute
   PortalRoute: typeof PortalRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/national'
       fullPath: '/national'
       preLoaderRoute: typeof NationalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal': {
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ConfigRoute: ConfigRoute,
   NationalRoute: NationalRoute,
+  PlatformRoute: PlatformRoute,
   PortalRoute: PortalRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
