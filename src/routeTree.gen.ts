@@ -13,7 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConfigRouteImport } from './routes/config'
 import { Route as NationalRouteImport } from './routes/national'
+import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as RegionalRouteImport } from './routes/regional'
+import { Route as RegisterSchoolRouteImport } from './routes/register-school'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as StaffRouteImport } from './routes/staff'
@@ -39,9 +42,24 @@ const NationalRoute = NationalRouteImport.update({
   path: '/national',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegionalRoute = RegionalRouteImport.update({
+  id: '/regional',
+  path: '/regional',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterSchoolRoute = RegisterSchoolRouteImport.update({
+  id: '/register-school',
+  path: '/register-school',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -70,7 +88,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
   '/national': typeof NationalRoute
+  '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
+  '/regional': typeof RegionalRoute
+  '/register-school': typeof RegisterSchoolRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/staff': typeof StaffRoute
@@ -81,7 +102,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
   '/national': typeof NationalRoute
+  '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
+  '/regional': typeof RegionalRoute
+  '/register-school': typeof RegisterSchoolRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/staff': typeof StaffRoute
@@ -93,7 +117,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
   '/national': typeof NationalRoute
+  '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
+  '/regional': typeof RegionalRoute
+  '/register-school': typeof RegisterSchoolRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/staff': typeof StaffRoute
@@ -106,7 +133,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/config'
     | '/national'
+    | '/platform'
     | '/portal'
+    | '/regional'
+    | '/register-school'
     | '/reset-password'
     | '/setup'
     | '/staff'
@@ -117,7 +147,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/config'
     | '/national'
+    | '/platform'
     | '/portal'
+    | '/regional'
+    | '/register-school'
     | '/reset-password'
     | '/setup'
     | '/staff'
@@ -128,7 +161,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/config'
     | '/national'
+    | '/platform'
     | '/portal'
+    | '/regional'
+    | '/register-school'
     | '/reset-password'
     | '/setup'
     | '/staff'
@@ -140,7 +176,10 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ConfigRoute: typeof ConfigRoute
   NationalRoute: typeof NationalRoute
+  PlatformRoute: typeof PlatformRoute
   PortalRoute: typeof PortalRoute
+  RegionalRoute: typeof RegionalRoute
+  RegisterSchoolRoute: typeof RegisterSchoolRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
   StaffRoute: typeof StaffRoute
@@ -177,11 +216,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NationalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal': {
       id: '/portal'
       path: '/portal'
       fullPath: '/portal'
       preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/regional': {
+      id: '/regional'
+      path: '/regional'
+      fullPath: '/regional'
+      preLoaderRoute: typeof RegionalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register-school': {
+      id: '/register-school'
+      path: '/register-school'
+      fullPath: '/register-school'
+      preLoaderRoute: typeof RegisterSchoolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -220,7 +280,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ConfigRoute: ConfigRoute,
   NationalRoute: NationalRoute,
+  PlatformRoute: PlatformRoute,
   PortalRoute: PortalRoute,
+  RegionalRoute: RegionalRoute,
+  RegisterSchoolRoute: RegisterSchoolRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
   StaffRoute: StaffRoute,
