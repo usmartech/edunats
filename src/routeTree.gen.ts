@@ -16,6 +16,7 @@ import { Route as NationalRouteImport } from './routes/national'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as RegionalRouteImport } from './routes/regional'
+import { Route as RegisterSchoolRouteImport } from './routes/register-school'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as StaffRouteImport } from './routes/staff'
@@ -56,6 +57,11 @@ const RegionalRoute = RegionalRouteImport.update({
   path: '/regional',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterSchoolRoute = RegisterSchoolRouteImport.update({
+  id: '/register-school',
+  path: '/register-school',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
   '/regional': typeof RegionalRoute
+  '/register-school': typeof RegisterSchoolRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/staff': typeof StaffRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
   '/regional': typeof RegionalRoute
+  '/register-school': typeof RegisterSchoolRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/staff': typeof StaffRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
   '/regional': typeof RegionalRoute
+  '/register-school': typeof RegisterSchoolRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/staff': typeof StaffRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/platform'
     | '/portal'
     | '/regional'
+    | '/register-school'
     | '/reset-password'
     | '/setup'
     | '/staff'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/platform'
     | '/portal'
     | '/regional'
+    | '/register-school'
     | '/reset-password'
     | '/setup'
     | '/staff'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/platform'
     | '/portal'
     | '/regional'
+    | '/register-school'
     | '/reset-password'
     | '/setup'
     | '/staff'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   PlatformRoute: typeof PlatformRoute
   PortalRoute: typeof PortalRoute
   RegionalRoute: typeof RegionalRoute
+  RegisterSchoolRoute: typeof RegisterSchoolRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
   StaffRoute: typeof StaffRoute
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegionalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register-school': {
+      id: '/register-school'
+      path: '/register-school'
+      fullPath: '/register-school'
+      preLoaderRoute: typeof RegisterSchoolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlatformRoute: PlatformRoute,
   PortalRoute: PortalRoute,
   RegionalRoute: RegionalRoute,
+  RegisterSchoolRoute: RegisterSchoolRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
   StaffRoute: StaffRoute,
