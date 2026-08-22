@@ -86,67 +86,45 @@ const ROLE_SUMMARY = ROLES.map((r) => ({
 }));
 
 function Landing() {
-  const [open, setOpen] = useState(false);
-  const [role, setRole] = useState<RoleId>("staff");
-  const [identifier, setIdentifier] = useState("");
-  const [setupComplete, setSetupComplete] = useState(false);
-  const [schools, setSchools] = useState<School[]>([]);
-  const [schoolId, setSchoolId] = useState("");
-  const { session, ready } = useSession();
-  const navigate = useNavigate();
+  const [bootstrapped, setBootstrapped] = useState(true);
+  const { identity, ready } = usePlatformIdentity();
+  const { platformName } = usePlatformSettings();
 
   useEffect(() => {
-    setSetupComplete(readUsers().some((user) => user.role === "super-admin"));
-    void (async () => {
-      await ensureSeeded();
-      const rows = (await listSchools()).filter((sc) => sc.active);
-      setSchools(rows);
-      setSchoolId((prev) => prev || rows[0]?.id || "");
-    })();
+    void supabase
+      .rpc("is_platform_bootstrapped")
+      .then(({ data }) => setBootstrapped(data !== false));
   }, []);
-
-  function handleLogin(e: FormEvent) {
-    e.preventDefault();
-    if (!identifier.trim()) return;
-    const school = schools.find((sc) => sc.id === schoolId);
-    signIn({ identifier, role, schoolId: school?.id, schoolName: school?.name });
-    navigate({ to: "/portal" });
-  }
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <a href="#top" className="flex items-center gap-2 font-extrabold tracking-tight">
-            <span className="text-xl">🏫</span> Scholaris
+            <span className="text-xl">🏫</span> {platformName}
           </a>
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
             <a href="#platform" className="transition-colors hover:text-foreground">Platform</a>
             <a href="#roles" className="transition-colors hover:text-foreground">Access levels</a>
             <a href="#how" className="transition-colors hover:text-foreground">How it works</a>
-            {setupComplete ? (
-              <Button variant="ghost" size="sm" disabled>
-                Setup complete
-              </Button>
-            ) : (
+            {!bootstrapped && (
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/setup">Setup</Link>
+                <Link to="/setup">First-time setup</Link>
               </Button>
             )}
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/national">National</Link>
-            </Button>
           </nav>
-          {ready && session ? (
+          {ready && identity ? (
             <Button size="sm" asChild>
-              <Link to="/portal">Go to portal</Link>
+              <Link to={landingRoute(identity)}>Go to dashboard</Link>
             </Button>
           ) : (
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" asChild>
-                <Link to="/auth">Cloud sign-in</Link>
+                <Link to="/register-school">Register your school</Link>
               </Button>
-              <Button size="sm" onClick={() => setOpen(true)}>Sign in</Button>
+              <Button size="sm" asChild>
+                <Link to="/auth">Sign in</Link>
+              </Button>
             </div>
           )}
         </div>
@@ -159,15 +137,15 @@ function Landing() {
               NATIONAL EDUCATION DIGITAL ECOSYSTEM
             </span>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-              One sign-in for your entire school
+              Every school, one hierarchy
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base opacity-85">
-              Scholaris authenticates you once, then opens the school portal with exactly the
-              modules your role and access level permit — nothing more, nothing less.
+              School admins run their own school end to end, regional and national admins keep
+              oversight of every registered school, and {platformName} governs the whole system.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Button variant="secondary" size="lg" onClick={() => setOpen(true)}>
-                Sign in to your portal
+              <Button variant="secondary" size="lg" asChild>
+                <Link to="/register-school">Register your school</Link>
               </Button>
               <Button
                 size="lg"
@@ -175,7 +153,7 @@ function Landing() {
                 className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
                 asChild
               >
-                <a href="#platform">Learn more</a>
+                <Link to="/auth">Sign in</Link>
               </Button>
             </div>
           </div>
