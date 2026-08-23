@@ -1,19 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { ROLES, readUsers, type RoleId } from "@/lib/access-control";
-import { signIn, useSession } from "@/lib/session";
-import { accessibleModules } from "@/lib/modules";
-import { ensureSeeded, listSchools, type School } from "@/lib/tenancy";
+import { ROLES } from "@/lib/access-control";
+import { landingRoute, usePlatformIdentity } from "@/lib/platform";
+import { usePlatformSettings } from "@/lib/hierarchy";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
