@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { setSessionSchool } from "@/lib/session";
 import { usePortalSession, signOutPortal } from "@/lib/portal-session";
+import { usePlatformIdentity } from "@/lib/platform";
 import { setActiveSchoolId } from "@/lib/platform";
 import { MODULE_GROUPS, MODULE_REGISTRY, schoolModules } from "@/lib/modules";
 import { setTenantContext } from "@/lib/data/tenant";
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/portal")({
 
 function PortalPage() {
   const { session, ready, role, cloud } = usePortalSession();
+  const { identity } = usePlatformIdentity();
   const navigate = useNavigate();
   const [schools, setSchools] = useState<School[]>([]);
   const [features, setFeatures] = useState<Record<string, boolean> | null>(null);
@@ -96,10 +98,11 @@ function PortalPage() {
               🏫 Scholaris
             </Link>
             <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
-              {role.icon} {session.fullName}
+              {identity?.scopeLabel ?? activeSchool?.name ?? session.schoolName ?? "Your school"}
             </h1>
             <p className="text-sm opacity-85">
-              {role.name} · {session.accessLevel} access · {mine.length} modules available
+              {role.icon} {session.fullName} · {role.name} · {session.accessLevel} access ·{" "}
+              {mine.length} modules available
             </p>
             <p className="mt-1 text-xs opacity-70">
               {activeSchool
