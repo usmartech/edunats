@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { setSessionSchool } from "@/lib/session";
 import { usePortalSession, signOutPortal } from "@/lib/portal-session";
 import { usePlatformIdentity } from "@/lib/platform";
+import { usePlatformSettings } from "@/lib/hierarchy";
+import { supabase } from "@/integrations/supabase/client";
 import { setActiveSchoolId } from "@/lib/platform";
 import { MODULE_GROUPS, MODULE_REGISTRY, schoolModules } from "@/lib/modules";
 import { setTenantContext } from "@/lib/data/tenant";
@@ -34,6 +36,20 @@ export const Route = createFileRoute("/portal")({
 function PortalPage() {
   const { session, ready, role, cloud } = usePortalSession();
   const { identity } = usePlatformIdentity();
+  const { platformName } = usePlatformSettings();
+  const [cloudSchoolName, setCloudSchoolName] = useState<string | null>(null);
+
+  /* The dashboard is named after the school the user is working in. */
+  useEffect(() => {
+    const id = session?.schoolId;
+    if (!id) return setCloudSchoolName(null);
+    void supabase
+      .from("schools")
+      .select("name")
+      .eq("id", id)
+      .maybeSingle()
+      .then(({ data }) => setCloudSchoolName(data?.name ?? null));
+  }, [session?.schoolId]);
   const navigate = useNavigate();
   const [schools, setSchools] = useState<School[]>([]);
   const [features, setFeatures] = useState<Record<string, boolean> | null>(null);
@@ -95,10 +111,14 @@ function PortalPage() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
           <div>
             <Link to="/" className="text-sm font-bold opacity-80">
-              🏫 Scholaris
+              🏫 {platformName}
             </Link>
             <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
-              {identity?.scopeLabel ?? activeSchool?.name ?? session.schoolName ?? "Your school"}
+              {cloudSchoolName ??
+                activeSchool?.name ??
+                session.schoolName ??
+                identity?.scopeLabel ??
+                "Your school"}
             </h1>
             <p className="text-sm opacity-85">
               {role.icon} {session.fullName} · {role.name} · {session.accessLevel} access ·{" "}
