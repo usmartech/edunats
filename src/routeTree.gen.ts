@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConfigRouteImport } from './routes/config'
+import { Route as ManageRouteImport } from './routes/manage'
 import { Route as NationalRouteImport } from './routes/national'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as PortalRouteImport } from './routes/portal'
@@ -35,6 +36,11 @@ const AuthRoute = AuthRouteImport.update({
 const ConfigRoute = ConfigRouteImport.update({
   id: '/config',
   path: '/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManageRoute = ManageRouteImport.update({
+  id: '/manage',
+  path: '/manage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NationalRoute = NationalRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
+  '/manage': typeof ManageRoute
   '/national': typeof NationalRoute
   '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
+  '/manage': typeof ManageRoute
   '/national': typeof NationalRoute
   '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/config': typeof ConfigRoute
+  '/manage': typeof ManageRoute
   '/national': typeof NationalRoute
   '/platform': typeof PlatformRoute
   '/portal': typeof PortalRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/config'
+    | '/manage'
     | '/national'
     | '/platform'
     | '/portal'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/config'
+    | '/manage'
     | '/national'
     | '/platform'
     | '/portal'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/config'
+    | '/manage'
     | '/national'
     | '/platform'
     | '/portal'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   ConfigRoute: typeof ConfigRoute
+  ManageRoute: typeof ManageRoute
   NationalRoute: typeof NationalRoute
   PlatformRoute: typeof PlatformRoute
   PortalRoute: typeof PortalRoute
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/config'
       fullPath: '/config'
       preLoaderRoute: typeof ConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manage': {
+      id: '/manage'
+      path: '/manage'
+      fullPath: '/manage'
+      preLoaderRoute: typeof ManageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/national': {
@@ -279,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   ConfigRoute: ConfigRoute,
+  ManageRoute: ManageRoute,
   NationalRoute: NationalRoute,
   PlatformRoute: PlatformRoute,
   PortalRoute: PortalRoute,
