@@ -42,6 +42,8 @@ export type RegistrationRow = {
   district: string | null;
   status: string;
   created_at: string;
+  reviewed_at: string | null;
+  rejection_reason: string | null;
   requested_by: string;
 };
 
@@ -89,17 +91,76 @@ export async function fetchSchools(filter?: {
   return data ?? [];
 }
 
-export async function fetchRegistrations(status?: string): Promise<RegistrationRow[]> {
+/** Registration requests, always narrowed to the caller's slice of the hierarchy. */
+export async function fetchRegistrations(
+  status?: string,
+  scope?: { countryId?: string | null; regionId?: string | null },
+): Promise<RegistrationRow[]> {
   let query = supabase
     .from("school_registrations")
     .select(
-      "id, school_name, proposed_code, country_id, region_id, district, status, created_at, requested_by",
+      "id, school_name, proposed_code, country_id, region_id, district, status, created_at, reviewed_at, rejection_reason, requested_by",
     )
     .order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
+  if (scope?.countryId) query = query.eq("country_id", scope.countryId);
+  if (scope?.regionId) query = query.eq("region_id", scope.regionId);
   const { data } = await query;
   return data ?? [];
 }
+
+/* --------------------- super admin configuration -------------------- */
+
+export async function saveCountry(input: {
+  id?: string;
+  name: string;
+  code: string;
+  active?: boolean;
+}) {
+  const payload = { name: input.name, code: input.code.toUpperCase(), active: input.active ?? true };
+  const { error } = input.id
+    ? await supabase.from("countries").update(payload).eq("id", input.id)
+    : await supabase.from("countries").insert(payload);
+  if (error) throw new Error(error.message);
+}
+
+export async function saveRegion(input: {
+  id?: string;
+  countryId: string;
+  name: string;
+  code: string;
+  active?: boolean;
+}) {
+  const payload = {
+    country_id: input.countryId,
+    name: input.name,
+    code: input.code.toUpperCase(),
+    active: input.active ?? true,
+  };
+  const { error } = input.id
+    ? await supabase.from("regions").update(payload).eq("id", input.id)
+    : await supabase.from("regions").insert(payload);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteRegion(id: string) {
+  const { error } = await supabase.from("regions").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateSchool(
+  id: string,
+  patch: { name?: string; code?: string; active?: boolean; status?: string; region_id?: string | null },
+) {
+  const { error } = await supabase.from("schools").update(patch).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteSchool(id: string) {
+  const { error } = await supabase.from("schools").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 
 export function usePlatformSettings() {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);

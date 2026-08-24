@@ -213,21 +213,42 @@ export const reviewSchoolRegistration = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const roles = await context.supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", context.userId);
-    const allowed = (roles.data ?? []).some((r) =>
-      ["super_admin", "national_admin", "regional_admin"].includes(r.role),
-    );
-    if (!allowed) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: reg } = await supabaseAdmin
+      .from("school_registrations")
+      .select("id, status, country_id, region_id")
+      .eq("id", data.registrationId)
+      .maybeSingle();
+    if (!reg) throw new Error("Registration not found");
+    if (reg.status !== "pending") throw new Error(`This request was already ${reg.status}.`);
+
+    // Scope check: only an admin whose slice of the hierarchy contains the
+    // requested school may decide on it.
+    const { data: isSuper } = await context.supabase.rpc("is_super_admin", {
+      _user_id: context.userId,
+    });
+    let allowed = Boolean(isSuper);
+    if (!allowed && reg.country_id) {
+      const { data: isNational } = await context.supabase.rpc("is_national_admin", {
+        _user_id: context.userId,
+        _country_id: reg.country_id,
+      });
+      allowed = Boolean(isNational);
+    }
+    if (!allowed && reg.region_id) {
+      const { data: isRegional } = await context.supabase.rpc("is_regional_admin", {
+        _user_id: context.userId,
+        _region_id: reg.region_id,
+      });
+      allowed = Boolean(isRegional);
+    }
+    if (!allowed) throw new Error("Forbidden: this school is outside your scope.");
 
     const server = await import("./registration.server");
     if (data.decision === "approve") {
       return await server.approveRegistration(data.registrationId, context.userId);
     }
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
       .from("school_registrations")
       .update({
@@ -237,5 +258,14 @@ export const reviewSchoolRegistration = createServerFn({ method: "POST" })
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", data.registrationId);
+    await server.audit({
+      actorId: context.userId,
+      action: "school.registration.rejected",
+      scope: "platform",
+      targetTable: "school_registrations",
+      targetId: data.registrationId,
+      detail: { reason: data.reason },
+    });
     return { schoolId: null };
   });
+
