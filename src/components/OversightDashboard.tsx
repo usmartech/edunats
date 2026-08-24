@@ -12,16 +12,23 @@ import { reviewSchoolRegistration } from "@/lib/registration.functions";
 
 type Filter = { countryId?: string | null; regionId?: string | null };
 
+const STATUSES = ["pending", "approved", "rejected"] as const;
+type Status = (typeof STATUSES)[number];
+
 export function OversightDashboard({ filter }: { filter: Filter }) {
   const [schools, setSchools] = useState<SchoolRow[]>([]);
-  const [pending, setPending] = useState<RegistrationRow[]>([]);
+  const [requests, setRequests] = useState<RegistrationRow[]>([]);
+  const [tab, setTab] = useState<Status>("pending");
   const [busy, setBusy] = useState(false);
   const review = useServerFn(reviewSchoolRegistration);
 
   const load = useCallback(async () => {
-    const [rows, regs] = await Promise.all([fetchSchools(filter), fetchRegistrations("pending")]);
+    const [rows, regs] = await Promise.all([
+      fetchSchools(filter),
+      fetchRegistrations(undefined, filter),
+    ]);
     setSchools(rows);
-    setPending(regs);
+    setRequests(regs);
   }, [filter.countryId, filter.regionId]);
 
   useEffect(() => {
@@ -29,9 +36,14 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
   }, [load]);
 
   async function decide(id: string, decision: "approve" | "reject") {
+    let reason: string | null = null;
+    if (decision === "reject") {
+      reason = window.prompt("Reason for rejecting this registration?") ?? null;
+      if (reason === null) return;
+    }
     setBusy(true);
     try {
-      await review({ data: { registrationId: id, decision, reason: null } });
+      await review({ data: { registrationId: id, decision, reason } });
       toast.success(decision === "approve" ? "School approved" : "Registration rejected");
       await load();
     } catch (error) {
@@ -42,32 +54,56 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
   }
 
   const active = schools.filter((s) => s.active).length;
+  const counts = Object.fromEntries(
+    STATUSES.map((s) => [s, requests.filter((r) => r.status === s).length]),
+  ) as Record<Status, number>;
+  const visible = requests.filter((r) => r.status === tab);
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Registered schools" value={schools.length} />
         <Stat label="Active" value={active} />
-        <Stat label="Pending registrations" value={pending.length} />
+        <Stat label="Pending requests" value={counts.pending} />
+        <Stat label="Rejected requests" value={counts.rejected} />
       </div>
 
-      {pending.length > 0 && (
-        <section className="mt-10">
+      <section className="mt-10">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Registration requests
           </h2>
-          <div className="mt-4 space-y-3">
-            {pending.map((r) => (
-              <div
-                key={r.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4"
+          <div className="flex gap-2">
+            {STATUSES.map((s) => (
+              <Button
+                key={s}
+                size="sm"
+                variant={tab === s ? "default" : "outline"}
+                onClick={() => setTab(s)}
               >
-                <div>
-                  <p className="font-bold">{r.school_name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {r.proposed_code} · {r.district ?? "—"}
-                  </p>
-                </div>
+                {s[0]!.toUpperCase() + s.slice(1)} ({counts[s]})
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          {visible.map((r) => (
+            <div
+              key={r.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4"
+            >
+              <div>
+                <p className="font-bold">{r.school_name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {r.proposed_code} · {r.district ?? "—"} ·{" "}
+                  {new Date(r.created_at).toLocaleDateString()}
+                </p>
+                {r.status === "rejected" && r.rejection_reason && (
+                  <p className="mt-1 text-sm text-destructive">Reason: {r.rejection_reason}</p>
+                )}
+              </div>
+              {r.status === "pending" ? (
                 <div className="flex gap-2">
                   <Button size="sm" disabled={busy} onClick={() => void decide(r.id, "approve")}>
                     Approve
@@ -81,11 +117,21 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
                     Reject
                   </Button>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+              ) : (
+                <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                  {r.status}
+                  {r.reviewed_at ? ` · ${new Date(r.reviewed_at).toLocaleDateString()}` : ""}
+                </span>
+              )}
+            </div>
+          ))}
+          {visible.length === 0 && (
+            <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+              No {tab} registration requests in your scope.
+            </p>
+          )}
+        </div>
+      </section>
 
       <section className="mt-10">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
