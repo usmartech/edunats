@@ -77,14 +77,8 @@ function RegisterSchoolPage() {
           contactPhone: form.contactPhone || null,
         },
       });
-      if (result.status === "approved" && result.schoolId) {
-        setActiveSchoolId(result.schoolId);
-        toast.success("School registered. You are now its school administrator.");
-        window.location.href = "/portal";
-      } else {
-        toast.success("Registration submitted for review.");
-        void navigate({ to: "/" });
-      }
+      toast.success("School registration submitted. It has been sent to your regional administrator for review & confirmation.");
+      void navigate({ to: "/" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not register the school");
     } finally {
@@ -101,8 +95,7 @@ function RegisterSchoolPage() {
           </Link>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight">Register your school</h1>
           <p className="mt-1 text-sm opacity-85">
-            You become the school administrator with full control of the school, its modules, its
-            users and its configuration.
+            Submit your school registration. It will automatically be sent as a registration request to your regional administrator for review and confirmation, followed by national administrator final approval before full operational module access is granted.
           </p>
         </div>
       </header>

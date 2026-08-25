@@ -82,7 +82,38 @@ export async function audit(entry: {
   });
 }
 
-/** Creates the school from an approved registration and makes the requester its admin. */
+/** Confirms a pending school registration (regional admin step) and forwards it for national approval. */
+export async function confirmRegistration(registrationId: string, reviewerId: string) {
+  const { data: reg, error } = await supabaseAdmin
+    .from("school_registrations")
+    .select("*")
+    .eq("id", registrationId)
+    .maybeSingle();
+  if (error || !reg) throw new Error("Registration not found");
+  if (reg.status !== "pending") throw new Error(`Only pending registrations can be confirmed. Current status: ${reg.status}`);
+
+  await supabaseAdmin
+    .from("school_registrations")
+    .update({
+      status: "region_confirmed",
+      confirmed_by: reviewerId,
+      confirmed_at: new Date().toISOString(),
+    })
+    .eq("id", registrationId);
+
+  await audit({
+    actorId: reviewerId,
+    action: "school.registration.confirmed_by_region",
+    scope: "region",
+    scopeId: reg.region_id,
+    targetTable: "school_registrations",
+    targetId: registrationId,
+  });
+
+  return { registrationId };
+}
+
+/** Creates the school from an approved registration and makes the requester its admin (super admin of the school). */
 export async function approveRegistration(registrationId: string, reviewerId: string) {
   const { data: reg, error } = await supabaseAdmin
     .from("school_registrations")

@@ -12,8 +12,15 @@ import { reviewSchoolRegistration } from "@/lib/registration.functions";
 
 type Filter = { countryId?: string | null; regionId?: string | null };
 
-const STATUSES = ["pending", "approved", "rejected"] as const;
+const STATUSES = ["pending", "region_confirmed", "approved", "rejected"] as const;
 type Status = (typeof STATUSES)[number];
+
+const STATUS_LABELS: Record<Status, string> = {
+  pending: "Pending Regional Review",
+  region_confirmed: "Regional Confirmed (Awaiting National Approval)",
+  approved: "Approved",
+  rejected: "Rejected",
+};
 
 export function OversightDashboard({ filter }: { filter: Filter }) {
   const [schools, setSchools] = useState<SchoolRow[]>([]);
@@ -35,7 +42,7 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
     void load();
   }, [load]);
 
-  async function decide(id: string, decision: "approve" | "reject") {
+  async function decide(id: string, decision: "confirm" | "approve" | "reject") {
     let reason: string | null = null;
     if (decision === "reject") {
       reason = window.prompt("Reason for rejecting this registration?") ?? null;
@@ -44,7 +51,13 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
     setBusy(true);
     try {
       await review({ data: { registrationId: id, decision, reason } });
-      toast.success(decision === "approve" ? "School approved" : "Registration rejected");
+      toast.success(
+        decision === "confirm"
+          ? "Registration confirmed and forwarded to National Admin for final approval."
+          : decision === "approve"
+          ? "School registration approved and super admin account created!"
+          : "Registration rejected",
+      );
       await load();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not complete the review");
@@ -61,10 +74,11 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10">
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-5">
         <Stat label="Registered schools" value={schools.length} />
         <Stat label="Active" value={active} />
-        <Stat label="Pending requests" value={counts.pending} />
+        <Stat label="Pending Regional" value={counts.pending} />
+        <Stat label="Region Confirmed" value={counts.region_confirmed} />
         <Stat label="Rejected requests" value={counts.rejected} />
       </div>
 
@@ -73,7 +87,7 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Registration requests
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {STATUSES.map((s) => (
               <Button
                 key={s}
@@ -81,7 +95,7 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
                 variant={tab === s ? "default" : "outline"}
                 onClick={() => setTab(s)}
               >
-                {s[0]!.toUpperCase() + s.slice(1)} ({counts[s]})
+                {STATUS_LABELS[s]} ({counts[s]})
               </Button>
             ))}
           </div>
@@ -97,37 +111,60 @@ export function OversightDashboard({ filter }: { filter: Filter }) {
                 <p className="font-bold">{r.school_name}</p>
                 <p className="text-sm text-muted-foreground">
                   {r.proposed_code} · {r.district ?? "—"} ·{" "}
-                  {new Date(r.created_at).toLocaleDateString()}
+                  Submitted: {new Date(r.created_at).toLocaleDateString()}
                 </p>
+                {r.confirmed_at && (
+                  <p className="text-xs text-primary mt-0.5">
+                    ✓ Confirmed by Regional Admin on {new Date(r.confirmed_at).toLocaleDateString()}
+                  </p>
+                )}
                 {r.status === "rejected" && r.rejection_reason && (
                   <p className="mt-1 text-sm text-destructive">Reason: {r.rejection_reason}</p>
                 )}
               </div>
-              {r.status === "pending" ? (
-                <div className="flex gap-2">
-                  <Button size="sm" disabled={busy} onClick={() => void decide(r.id, "approve")}>
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => void decide(r.id, "reject")}
-                  >
-                    Reject
-                  </Button>
-                </div>
-              ) : (
-                <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
-                  {r.status}
-                  {r.reviewed_at ? ` · ${new Date(r.reviewed_at).toLocaleDateString()}` : ""}
-                </span>
-              )}
+              <div className="flex gap-2">
+                {r.status === "pending" && (
+                  <>
+                    <Button size="sm" disabled={busy} onClick={() => void decide(r.id, "confirm")}>
+                      Confirm (Forward to National)
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => void decide(r.id, "reject")}
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {r.status === "region_confirmed" && (
+                  <>
+                    <Button size="sm" disabled={busy} onClick={() => void decide(r.id, "approve")}>
+                      Approve & Create School
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => void decide(r.id, "reject")}
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {(r.status === "approved" || r.status === "rejected") && (
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                    {r.status}
+                    {r.reviewed_at ? ` · ${new Date(r.reviewed_at).toLocaleDateString()}` : ""}
+                  </span>
+                )}
+              </div>
             </div>
           ))}
           {visible.length === 0 && (
             <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-              No {tab} registration requests in your scope.
+              No {STATUS_LABELS[tab].toLowerCase()} registration requests in your scope.
             </p>
           )}
         </div>
