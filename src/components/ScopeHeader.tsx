@@ -19,7 +19,7 @@ export function ScopeHeader({
 
   const badge =
     identity.scope === "platform"
-      ? "Super Admin"
+      ? "System Admin"
       : identity.scope === "national"
         ? "National Admin"
         : identity.scope === "regional"

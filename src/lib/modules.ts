@@ -255,7 +255,7 @@ export function accessibleModules(role: RoleId | null | undefined): ModuleDef[] 
  * Per-school configurability.
  *
  * The ecosystem is centralised, but every school operates independently:
- * a school's Super Admin/Admin can switch tenant-scoped modules on or
+ * a school's Super Admin/School Manager can switch tenant-scoped modules on or
  * off, and the portal reflects that instantly. Platform (System) modules
  * belong to the national control plane and are never school-toggleable.
  * ------------------------------------------------------------------ */

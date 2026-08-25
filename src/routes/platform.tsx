@@ -14,13 +14,13 @@ import { createNationalAdmin } from "@/lib/registration.functions";
 export const Route = createFileRoute("/platform")({
   head: () => ({
     meta: [
-      { title: "Super Admin — Platform Control" },
+      { title: "System Admin — Platform Control" },
       {
         name: "description",
         content:
           "Platform-wide control: rename the platform, manage countries, appoint national administrators and oversee every registered school.",
       },
-      { property: "og:title", content: "Super Admin — Platform Control" },
+      { property: "og:title", content: "System Admin — Platform Control" },
       {
         property: "og:description",
         content: "Full control over the entire education platform and every registered school.",
