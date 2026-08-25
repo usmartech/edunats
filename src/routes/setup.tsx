@@ -38,8 +38,8 @@ function SetupPage() {
   const [form, setForm] = useState({
     platformName: "EduNat",
     tagline: "National education digital ecosystem",
-    countryName: "",
-    countryCode: "",
+    countryName: "Ghana",
+    countryCode: "GH",
     fullName: "",
     email: "",
     password: "",

@@ -193,24 +193,28 @@ function ManagePage() {
 
         <section className="rounded-xl border border-border bg-card p-5">
           <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-            Regions (regional dashboard names)
+            Regions / States / Provinces (regional dashboard names)
           </h2>
           <div className="mt-4 space-y-3">
-            {regions.map((r) => (
-              <EditableRow
-                key={r.id}
-                name={r.name}
-                code={r.code}
-                active={r.active}
-                onSave={(name, code, active) =>
-                  run(
-                    () => saveRegion({ id: r.id, countryId: r.country_id, name, code, active }),
-                    "Region updated",
-                  )
-                }
-                onDelete={() => run(() => deleteRegion(r.id), "Region deleted")}
-              />
-            ))}
+            {regions.map((r) => {
+              const countryName = countries.find((c) => c.id === r.country_id)?.name;
+              return (
+                <EditableRow
+                  key={r.id}
+                  name={r.name}
+                  code={r.code}
+                  active={r.active}
+                  countryLabel={countryName}
+                  onSave={(name, code, active) =>
+                    run(
+                      () => saveRegion({ id: r.id, countryId: r.country_id, name, code, active }),
+                      "Region updated",
+                    )
+                  }
+                  onDelete={() => run(() => deleteRegion(r.id), "Region deleted")}
+                />
+              );
+            })}
           </div>
           <form
             className="mt-4 flex flex-wrap gap-2"
@@ -292,12 +296,14 @@ function EditableRow({
   name,
   code,
   active,
+  countryLabel,
   onSave,
   onDelete,
 }: {
   name: string;
   code: string;
   active: boolean;
+  countryLabel?: string;
   onSave: (name: string, code: string, active: boolean) => Promise<unknown>;
   onDelete?: () => Promise<unknown>;
 }) {
@@ -306,6 +312,11 @@ function EditableRow({
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
+      {countryLabel && (
+        <span className="text-xs font-semibold px-2 py-1 rounded bg-muted text-muted-foreground">
+          {countryLabel}
+        </span>
+      )}
       <Input
         value={draft.name}
         onChange={(e) => setDraft({ ...draft, name: e.target.value })}

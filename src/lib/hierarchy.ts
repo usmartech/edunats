@@ -11,6 +11,30 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Country = { id: string; name: string; code: string; active: boolean };
 export type Region = { id: string; name: string; code: string; country_id: string; active: boolean };
+
+export const DEFAULT_COUNTRY = {
+  name: "Ghana",
+  code: "GH",
+};
+
+export const GHANA_16_REGIONS: Array<{ code: string; name: string }> = [
+  { code: "GAR", name: "Greater Accra" },
+  { code: "ASH", name: "Ashanti" },
+  { code: "WHR", name: "Western" },
+  { code: "WNR", name: "Western North" },
+  { code: "CPR", name: "Central" },
+  { code: "EPR", name: "Eastern" },
+  { code: "VTR", name: "Volta" },
+  { code: "OTR", name: "Oti" },
+  { code: "NPR", name: "Northern" },
+  { code: "SVR", name: "Savannah" },
+  { code: "NER", name: "North East" },
+  { code: "UER", name: "Upper East" },
+  { code: "UWR", name: "Upper West" },
+  { code: "BAR", name: "Bono" },
+  { code: "BER", name: "Bono East" },
+  { code: "AHR", name: "Ahafo" },
+];
 export type PlatformSettings = {
   id: string;
   platform_name: string;
