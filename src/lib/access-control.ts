@@ -1,11 +1,11 @@
 /* ------------------------------------------------------------------ *
  * Single reusable access-control structure.
- * Consolidation map:
- *   super-admin                -> super-admin (preserved)
- *   school-manager + admin     -> admin
- *   staff + teacher            -> staff
- *   student (both sources)     -> student
- *   parent                     -> parent (preserved)
+ * School Role Hierarchy:
+ *   Super Admin -> Super Admin
+ *   School Manager -> Admin
+ *   Staff -> Staff
+ *   Student -> Student
+ *   Parent -> Parent
  * ------------------------------------------------------------------ */
 
 export type RoleId = "super-admin" | "admin" | "staff" | "student" | "parent";
