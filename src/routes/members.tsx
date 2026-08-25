@@ -267,6 +267,6 @@ function MembersPage() {
 
 function label(role: Role) {
   return role === "school_admin"
-    ? "School admin"
+    ? "School Manager"
     : role[0]!.toUpperCase() + role.slice(1);
 }

@@ -58,9 +58,9 @@ export const ROLES: Role[] = [
   },
   {
     id: "admin",
-    name: "Admin",
+    name: "School Manager",
     icon: "⚙️",
-    level: "Administrator Access",
+    level: "School Manager Access",
     tagline: "Registrar, finance and school-wide operations.",
     merged: ["School Manager", "Admin"],
     accent: "bg-role-admin",

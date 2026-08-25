@@ -131,7 +131,7 @@ function Landing() {
               Every school, one hierarchy
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base opacity-85">
-              School admins run their own school end to end, regional and national admins keep
+              School managers run their own school end to end, regional and national admins keep
               oversight of every registered school, and {platformName} governs the whole system.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
