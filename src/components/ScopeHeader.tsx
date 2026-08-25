@@ -39,7 +39,24 @@ export function ScopeHeader({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          {identity.scope === "platform" && (
+            <Link
+              to="/manage"
+              className="rounded-md border border-primary-foreground/30 px-3 py-2 text-sm font-bold"
+            >
+              Configuration
+            </Link>
+          )}
+          {identity.activeSchoolId && (
+            <Link
+              to="/members"
+              className="rounded-md border border-primary-foreground/30 px-3 py-2 text-sm font-bold"
+            >
+              Members
+            </Link>
+          )}
           {children}
+
           <Button
             variant="outline"
             className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
