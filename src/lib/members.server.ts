@@ -1,6 +1,9 @@
 /* ------------------------------------------------------------------ *
  * School membership (service role).
  *
+ * School Role Hierarchy:
+ * Super Admin (100/platform) -> School Manager (school_admin: 70) -> Staff (50) -> Student (10) -> Parent (20)
+ *
  * Listing members needs the auth directory and profile rows the caller
  * cannot read directly, so those reads happen here — always behind a
  * server function that has already authorised the caller for the school.
