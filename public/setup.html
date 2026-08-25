@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Setup - System & National Administrator Account Creation</title>
+    <script src="shared-auth.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .setup-header {
+            margin-bottom: 30px;
+        }
+
+        .setup-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .setup-header p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group .password-requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .form-group .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .setup-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .setup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .setup-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .security-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .setup-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .setup-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .setup-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .setup-status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .back-to-login {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .back-to-login a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-to-login a:hover {
+            text-decoration: underline;
+        }
+
+        /* Tab Styles */
+        .account-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: #f8f9fa;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        .tab-btn:hover {
+            background: #e9ecef;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .setup-form {
+            display: none;
+        }
+
+        .setup-form.active {
+            display: block;
+        }
+
+        .password-strength {
+            height: 4px;
+            background: #e1e5e9;
+            border-radius: 2px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .strength-weak { background-color: #e74c3c; }
+        .strength-medium { background-color: #f39c12; }
+        .strength-strong { background-color: #27ae60; }
+
+        /* Notification Badge & Toast Styles */
+        .notification-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .notification-badge:hover {
+            transform: scale(1.1);
+        }
+
+        .notification-toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 15px;
+            min-width: 300px;
+            max-width: 400px;
+            z-index: 10001;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid #007bff;
+        }
+
+        .notification-toast.notification-success { border-left-color: #28a745; }
+        .notification-toast.notification-error { border-left-color: #dc3545; }
+        .notification-toast.notification-warning { border-left-color: #ffc107; }
+        .notification-toast.notification-info { border-left-color: #17a2b8; }
+        .notification-toast.notification-system { border-left-color: #6c757d; }
+
+        .toast-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .toast-icon { margin-right: 8px; }
+        .toast-title { font-weight: bold; flex-grow: 1; }
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .toast-message { margin-bottom: 5px; color: #333; font-size: 14px; }
+        .toast-time { font-size: 11px; color: #666; }
+
+        .notification-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            z-index: 10002;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .panel-header h3 { margin: 0; color: #333; }
+        .panel-header button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .panel-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .notification-item {
+            display: flex;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+
+        .notification-item.unread { background-color: #f0f8ff; border-left: 3px solid #007bff; }
+        .notification-icon { font-size: 20px; margin-right: 15px; }
+        .notification-content { flex-grow: 1; text-align: left; }
+        .notification-title { font-weight: bold; margin-bottom: 5px; color: #333; }
+        .notification-message { color: #666; margin-bottom: 5px; font-size: 13px; }
+        .notification-time { font-size: 11px; color: #999; }
+
+        .panel-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+        }
+
+        .panel-footer button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h1>🔐 System Setup</h1>
+            <p>Create accounts for your National Management System</p>
+            <div id="systemStatus" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
+                <div id="statusContent">Loading system status...</div>
+            </div>
+        </div>
+
+        <!-- Account Type Tabs -->
+        <div class="account-tabs">
+            <button type="button" class="tab-btn active" id="tabBtnSystemAdmin" onclick="showTab('system-admin')">System Administrator</button>
+            <button type="button" class="tab-btn" id="tabBtnNationalAdmin" onclick="showTab('national-admin')">National Administration</button>
+        </div>
+
+        <!-- System Admin Form -->
+        <form class="setup-form active" id="systemAdminForm">
+            <div class="form-group">
+                <label for="fullName">Full Name *</label>
+                <input type="text" id="fullName" name="fullName" required
+                       placeholder="Enter full name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required
+                       placeholder="Enter email address">
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username *</label>
+                <input type="text" id="username" name="username" required
+                       placeholder="Choose a username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" required
+                       placeholder="Enter a strong password">
+                <div class="password-requirements">
+                    Must be at least 8 characters with uppercase, lowercase, number, and special character
+                </div>
+                <div class="password-strength">
+                    <div class="password-strength-bar" id="passwordStrength"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password *</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required
+                       placeholder="Confirm your password">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone"
+                       placeholder="Enter phone number">
+            </div>
+
+            <button type="submit" class="setup-btn" id="systemAdminBtn">
+                Create System Administrator Account
+            </button>
+        </form>
+
+        <!-- National Admin Form -->
+        <form class="setup-form" id="nationalAdminForm">
+            <div class="form-group">
+                <label for="naFullName">Full Name *</label>
+                <input type="text" id="naFullName" name="naFullName" required
+                       placeholder="Enter full name">
+            </div>
+
+            <div class="form-group">
+                <label for="naEmail">Email Address *</label>
+                <input type="email" id="naEmail" name="naEmail" required
+                       placeholder="Enter email address">
+            </div>
+
+            <div class="form-group">
+                <label for="naUsername">Username *</label>
+                <input type="text" id="naUsername" name="naUsername" required
+                       placeholder="Choose a username">
+            </div>
+
+            <div class="form-group">
+                <label for="naPassword">Password *</label>
+                <input type="password" id="naPassword" name="naPassword" required
+                       placeholder="Enter a strong password">
+                <div class="password-requirements">
+                    Must be at least 8 characters with uppercase, lowercase, number, and special character
+                </div>
+                <div class="password-strength">
+                    <div class="password-strength-bar" id="naPasswordStrength"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="naConfirmPassword">Confirm Password *</label>
+                <input type="password" id="naConfirmPassword" name="naConfirmPassword" required
+                       placeholder="Confirm your password">
+            </div>
+
+            <div class="form-group">
+                <label for="naPhone">Phone Number</label>
+                <input type="tel" id="naPhone" name="naPhone"
+                       placeholder="Enter phone number">
+            </div>
+
+            <div class="form-group">
+                <label for="countryName">Country Name *</label>
+                <input type="text" id="countryName" name="countryName" required
+                       placeholder="Enter country name">
+            </div>
+
+            <div class="form-group">
+                <label for="countryAddress">Country Address</label>
+                <input type="text" id="countryAddress" name="countryAddress"
+                       placeholder="Enter country address">
+            </div>
+
+            <button type="submit" class="setup-btn" id="nationalAdminBtn">
+                Create National Admin Account
+            </button>
+        </form>
+
+        <div class="security-notice" id="securityNotice">
+            <strong>⚠️ Security Notice:</strong><br>
+            This setup page creates the primary System Administrator account and unique National Administrator account with system-level access. Keep credentials secure and update passwords upon first login.
+        </div>
+
+        <div class="back-to-login">
+            <a href="index.html">← Back to Login</a>
+            <span style="margin: 0 10px;">|</span>
+            <a href="check-users.html">📊 Check Users</a>
+            <span style="margin: 0 10px;">|</span>
+            <a href="Enhanced_School_Management_Portal.html">🏠 Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        function showTab(tabName) {
+            const systemAdmins = getSystemAdmins();
+            const nationalAdmins = getNationalAdmins();
+
+            // Prevent switching to disabled tab if account already exists
+            if (tabName === 'system-admin' && systemAdmins.length > 0) {
+                showStatus('System Administrator account already exists. Only one unique System Admin account is allowed.', 'info');
+                return;
+            }
+            if (tabName === 'national-admin' && nationalAdmins.length > 0) {
+                showStatus('National Administrator account already exists. Only one unique National Admin account is allowed.', 'info');
+                return;
+            }
+
+            // Hide all forms
+            const forms = document.querySelectorAll('.setup-form');
+            forms.forEach(form => {
+                form.classList.remove('active');
+                form.style.display = 'none';
+            });
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            // Show selected form and activate tab
+            if (tabName === 'system-admin') {
+                const sysForm = document.getElementById('systemAdminForm');
+                const sysBtn = document.getElementById('tabBtnSystemAdmin');
+                if (sysForm) {
+                    sysForm.classList.add('active');
+                    sysForm.style.display = 'block';
+                }
+                if (sysBtn) sysBtn.classList.add('active');
+            } else if (tabName === 'national-admin') {
+                const natForm = document.getElementById('nationalAdminForm');
+                const natBtn = document.getElementById('tabBtnNationalAdmin');
+                if (natForm) {
+                    natForm.classList.add('active');
+                    natForm.style.display = 'block';
+                }
+                if (natBtn) natBtn.classList.add('active');
+            }
+        }
+
+        // Helper getters for users
+        function getAllUsers() {
+            try {
+                return JSON.parse(localStorage.getItem('users') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function getSystemAdmins() {
+            const users = getAllUsers();
+            return users.filter(user => user.role === 'system-admin' || user.role === 'super-admin');
+        }
+
+        function getNationalAdmins() {
+            const users = getAllUsers();
+            return users.filter(user => user.role === 'national-admin');
+        }
+
+        // Check if setup is already completed and enforce single unique accounts
+        function checkSetupStatus() {
+            const systemAdmins = getSystemAdmins();
+            const nationalAdmins = getNationalAdmins();
+
+            const sysBtn = document.getElementById('tabBtnSystemAdmin');
+            const natBtn = document.getElementById('tabBtnNationalAdmin');
+
+            if (systemAdmins.length > 0 && nationalAdmins.length > 0) {
+                showStatus('Setup already completed. System Admin and National Admin accounts exist.', 'info');
+                document.querySelector('.account-tabs').style.display = 'none';
+                document.getElementById('systemAdminForm').style.display = 'none';
+                document.getElementById('nationalAdminForm').style.display = 'none';
+                document.getElementById('securityNotice').innerHTML =
+                    '<strong>✅ Setup Complete:</strong><br>System Administrator and National Administrator accounts already exist. ' +
+                    'You can now login to the system.';
+            } else if (systemAdmins.length > 0) {
+                showStatus('System Administrator account exists. You can create a National Administrator account.', 'info');
+                if (sysBtn) {
+                    sysBtn.disabled = true;
+                    sysBtn.title = 'System Administrator account already created';
+                }
+                // Activate national admin tab
+                showTab('national-admin');
+            } else if (nationalAdmins.length > 0) {
+                showStatus('National Administrator account exists. You can create a System Administrator account.', 'info');
+                if (natBtn) {
+                    natBtn.disabled = true;
+                    natBtn.title = 'National Administrator account already created';
+                }
+                // Activate system admin tab
+                showTab('system-admin');
+            } else {
+                showTab('system-admin');
+            }
+        }
+
+        // Password strength checker
+        function checkPasswordStrength(password, elementId) {
+            let strength = 0;
+
+            if (password.length >= 8) strength += 1;
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+            const strengthBar = document.getElementById(elementId);
+            if (strengthBar) {
+                const percentage = (strength / 5) * 100;
+
+                strengthBar.style.width = percentage + '%';
+                strengthBar.className = 'password-strength-bar';
+
+                if (percentage <= 40) {
+                    strengthBar.classList.add('strength-weak');
+                } else if (percentage <= 80) {
+                    strengthBar.classList.add('strength-medium');
+                } else {
+                    strengthBar.classList.add('strength-strong');
+                }
+            }
+
+            return strength;
+        }
+
+        // Form validation functions
+        function validateSystemAdminForm() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const phone = document.getElementById('phone').value.trim();
+
+            clearErrors();
+            let isValid = true;
+
+            if (fullName.length < 2) {
+                showError('fullName', 'Full name must be at least 2 characters');
+                isValid = false;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('email', 'Please enter a valid email address');
+                isValid = false;
+            }
+
+            if (username.length < 3) {
+                showError('username', 'Username must be at least 3 characters');
+                isValid = false;
+            }
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                showError('username', 'Username can only contain letters, numbers, and underscores');
+                isValid = false;
+            }
+
+            const weakUsernames = ['admin', 'user', 'test', 'demo', 'guest'];
+            if (weakUsernames.includes(username.toLowerCase())) {
+                showError('username', 'Please use a more secure username');
+                isValid = false;
+            }
+
+            const passwordStrength = checkPasswordStrength(password, 'passwordStrength');
+            if (passwordStrength < 3) {
+                showError('password', 'Password must be at least 8 characters with uppercase, lowercase, and number');
+                isValid = false;
+            }
+
+            if (password !== confirmPassword) {
+                showError('confirmPassword', 'Passwords do not match');
+                isValid = false;
+            }
+
+            if (phone && !/^[\+]?[0-9\s\-\(\)]{10,}$/.test(phone)) {
+                showError('phone', 'Please enter a valid phone number');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function validateNationalAdminForm() {
+            const fullName = document.getElementById('naFullName').value.trim();
+            const email = document.getElementById('naEmail').value.trim();
+            const username = document.getElementById('naUsername').value.trim();
+            const password = document.getElementById('naPassword').value;
+            const confirmPassword = document.getElementById('naConfirmPassword').value;
+            const phone = document.getElementById('naPhone').value.trim();
+            const countryName = document.getElementById('countryName').value.trim();
+
+            clearErrors();
+            let isValid = true;
+
+            if (fullName.length < 2) {
+                showError('naFullName', 'Full name must be at least 2 characters');
+                isValid = false;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('naEmail', 'Please enter a valid email address');
+                isValid = false;
+            }
+
+            if (username.length < 3) {
+                showError('naUsername', 'Username must be at least 3 characters');
+                isValid = false;
+            }
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                showError('naUsername', 'Username can only contain letters, numbers, and underscores');
+                isValid = false;
+            }
+
+            const weakUsernames = ['admin', 'user', 'test', 'demo', 'guest'];
+            if (weakUsernames.includes(username.toLowerCase())) {
+                showError('naUsername', 'Please use a more secure username');
+                isValid = false;
+            }
+
+            const passwordStrength = checkPasswordStrength(password, 'naPasswordStrength');
+            if (passwordStrength < 3) {
+                showError('naPassword', 'Password must be at least 8 characters with uppercase, lowercase, and number');
+                isValid = false;
+            }
+
+            if (password !== confirmPassword) {
+                showError('naConfirmPassword', 'Passwords do not match');
+                isValid = false;
+            }
+
+            if (phone && !/^[\+]?[0-9\s\-\(\)]{10,}$/.test(phone)) {
+                showError('naPhone', 'Please enter a valid phone number');
+                isValid = false;
+            }
+
+            if (countryName.length < 2) {
+                showError('countryName', 'Country name must be at least 2 characters');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            if (field && field.parentNode) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                field.parentNode.appendChild(errorDiv);
+            }
+        }
+
+        function clearErrors() {
+            const errors = document.querySelectorAll('.error');
+            errors.forEach(error => error.remove());
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `setup-status ${type}`;
+            statusDiv.textContent = message;
+
+            const existingStatus = document.querySelector('.setup-container .setup-status');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+
+            document.querySelector('.setup-container').appendChild(statusDiv);
+        }
+
+        function validateSecureAccountData(formData, accountTitle) {
+            const genericNames = ['admin user', 'test user', 'demo user', 'sample user', 'user test', 'user demo'];
+            if (genericNames.some(name => formData.fullName.toLowerCase().includes(name))) {
+                throw new Error(`Please use a real person's name for the ${accountTitle} account.`);
+            }
+
+            const genericEmails = ['admin@example.com', 'test@example.com', 'demo@example.com', 'user@example.com'];
+            if (genericEmails.some(email => formData.email.toLowerCase().includes(email))) {
+                throw new Error(`Please use a real email address for the ${accountTitle} account.`);
+            }
+
+            const weakUsernames = ['demo123', 'test123', 'admin123', 'password123', 'user123', 'admin', 'user', 'test', 'demo'];
+            if (weakUsernames.some(username => formData.username.toLowerCase() === username)) {
+                throw new Error(`Please use a more secure username for the ${accountTitle} account.`);
+            }
+        }
+
+        // Create unique System Admin account
+        function createSystemAdmin(formData) {
+            try {
+                // Uniqueness enforcement: ensure no System Admin exists yet
+                const existingSystemAdmins = getSystemAdmins();
+                if (existingSystemAdmins.length > 0) {
+                    throw new Error('A System Administrator account already exists. Only one unique System Admin account is allowed.');
+                }
+
+                validateSecureAccountData(formData, 'System Administrator');
+
+                const existingUsers = getAllUsers();
+                if (existingUsers.some(u => u.username.toLowerCase() === formData.username.toLowerCase())) {
+                    throw new Error('Username already exists. Please choose a different username.');
+                }
+                if (existingUsers.some(u => u.email.toLowerCase() === formData.email.toLowerCase())) {
+                    throw new Error('Email address already exists. Please use a different email.');
+                }
+
+                const systemAdmin = {
+                    id: Date.now() + Math.random(),
+                    username: formData.username,
+                    fullName: formData.fullName,
+                    email: formData.email,
+                    role: 'system-admin',
+                    password: btoa(formData.password),
+                    status: 'active',
+                    accessLevel: 'System Administrator',
+                    lastLogin: 'Never',
+                    lastActivity: null,
+                    loginAttempts: 0,
+                    lockedUntil: null,
+                    createdAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    department: 'System Administration',
+                    phone: formData.phone || '',
+                    notes: 'Unique System Administrator created during initial system setup',
+                    securityLevel: 'maximum',
+                    accountStatus: 'active',
+                    setupCompleted: true,
+                    setupTimestamp: new Date().toISOString()
+                };
+
+                existingUsers.push(systemAdmin);
+                localStorage.setItem('users', JSON.stringify(existingUsers));
+
+                updateSystemStatus();
+                checkSetupStatus();
+
+                // Audit log
+                const auditLogs = JSON.parse(localStorage.getItem('auditLogs') || '[]');
+                auditLogs.push({
+                    timestamp: new Date().toISOString(),
+                    event: 'system_admin_created',
+                    details: `Unique System Administrator account created: ${formData.username}`,
+                    user: 'system',
+                    securityLevel: 'maximum'
+                });
+                localStorage.setItem('auditLogs', JSON.stringify(auditLogs));
+
+                return {
+                    success: true,
+                    username: formData.username,
+                    password: formData.password
+                };
+
+            } catch (error) {
+                throw new Error('Failed to create System Administrator account: ' + error.message);
+            }
+        }
+
+        // Create unique National Admin account
+        function createNationalAdmin(formData) {
+            try {
+                // Uniqueness enforcement: ensure no National Admin exists yet
+                const existingNationalAdmins = getNationalAdmins();
+                if (existingNationalAdmins.length > 0) {
+                    throw new Error('A National Administrator account already exists. Only one unique National Admin account is allowed.');
+                }
+
+                validateSecureAccountData(formData, 'National Administrator');
+
+                const existingUsers = getAllUsers();
+                if (existingUsers.some(u => u.username.toLowerCase() === formData.username.toLowerCase())) {
+                    throw new Error('Username already exists. Please choose a different username.');
+                }
+                if (existingUsers.some(u => u.email.toLowerCase() === formData.email.toLowerCase())) {
+                    throw new Error('Email address already exists. Please use a different email.');
+                }
+
+                const nationalAdmin = {
+                    id: Date.now() + Math.random(),
+                    username: formData.username,
+                    fullName: formData.fullName,
+                    email: formData.email,
+                    role: 'national-admin',
+                    password: btoa(formData.password),
+                    status: 'active',
+                    accessLevel: 'National Administrator',
+                    lastLogin: 'Never',
+                    lastActivity: null,
+                    loginAttempts: 0,
+                    lockedUntil: null,
+                    createdAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    department: 'National Administration',
+                    phone: formData.phone || '',
+                    countryName: formData.countryName || '',
+                    countryAddress: formData.countryAddress || '',
+                    notes: 'Unique National Administrator created during initial system setup',
+                    securityLevel: 'high',
+                    accountStatus: 'active',
+                    setupCompleted: true,
+                    setupTimestamp: new Date().toISOString()
+                };
+
+                existingUsers.push(nationalAdmin);
+                localStorage.setItem('users', JSON.stringify(existingUsers));
+
+                updateSystemStatus();
+                checkSetupStatus();
+
+                // Audit log
+                const auditLogs = JSON.parse(localStorage.getItem('auditLogs') || '[]');
+                auditLogs.push({
+                    timestamp: new Date().toISOString(),
+                    event: 'national_admin_created',
+                    details: `Unique National Administrator account created: ${formData.username} for ${formData.countryName}`,
+                    user: 'system',
+                    securityLevel: 'high'
+                });
+                localStorage.setItem('auditLogs', JSON.stringify(auditLogs));
+
+                return {
+                    success: true,
+                    username: formData.username,
+                    password: formData.password,
+                    countryName: formData.countryName
+                };
+
+            } catch (error) {
+                throw new Error('Failed to create National Administrator account: ' + error.message);
+            }
+        }
+
+        // Form submission handlers
+        document.getElementById('systemAdminForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!validateSystemAdminForm()) {
+                notificationSystem.addNotification('error', 'Validation Error', 'Please fix the form errors before submitting');
+                return;
+            }
+
+            const formData = {
+                fullName: document.getElementById('fullName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                username: document.getElementById('username').value.trim(),
+                password: document.getElementById('password').value,
+                phone: document.getElementById('phone').value.trim()
+            };
+
+            const submitBtn = document.getElementById('systemAdminBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+
+            try {
+                notificationSystem.addNotification('info', 'Account Creation', 'Creating System Administrator account...');
+                const result = createSystemAdmin(formData);
+
+                notificationSystem.addNotification('success', 'Account Created', `System Administrator account created successfully for ${formData.fullName}`);
+                showStatus('✅ System Administrator account created successfully!', 'success');
+
+                setTimeout(() => {
+                    const credentialsDiv = document.createElement('div');
+                    credentialsDiv.className = 'setup-status success';
+                    credentialsDiv.innerHTML = `
+                        <strong>🎉 Account Setup Complete!</strong><br><br>
+                        <strong>System Administrator Credentials:</strong><br>
+                        Username: <code>${result.username}</code><br>
+                        Password: <code>${result.password}</code><br><br>
+                        <strong>Account Role:</strong> System Administrator (Unique)<br>
+                        <strong>Security Level:</strong> Maximum<br><br>
+                        <strong>⚠️ Important:</strong> Save these credentials securely.<br><br>
+                        <a href="index.html" style="color: #155724; font-weight: bold;">→ Go to Login Now</a>
+                    `;
+
+                    const existingStatus = document.querySelector('.setup-container .setup-status');
+                    if (existingStatus) {
+                        existingStatus.remove();
+                    }
+
+                    document.querySelector('.setup-container').appendChild(credentialsDiv);
+                }, 800);
+
+            } catch (error) {
+                notificationSystem.addNotification('error', 'Account Creation Failed', error.message);
+                showStatus('❌ ' + error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create System Administrator Account';
+            }
+        });
+
+        document.getElementById('nationalAdminForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!validateNationalAdminForm()) {
+                notificationSystem.addNotification('error', 'Validation Error', 'Please fix the form errors before submitting');
+                return;
+            }
+
+            const formData = {
+                fullName: document.getElementById('naFullName').value.trim(),
+                email: document.getElementById('naEmail').value.trim(),
+                username: document.getElementById('naUsername').value.trim(),
+                password: document.getElementById('naPassword').value,
+                phone: document.getElementById('naPhone').value.trim(),
+                countryName: document.getElementById('countryName').value.trim(),
+                countryAddress: document.getElementById('countryAddress').value.trim()
+            };
+
+            const submitBtn = document.getElementById('nationalAdminBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+
+            try {
+                notificationSystem.addNotification('info', 'Account Creation', 'Creating National Admin account...');
+                const result = createNationalAdmin(formData);
+
+                notificationSystem.addNotification('success', 'Account Created', `National Administrator account created successfully for ${formData.fullName} (${formData.countryName})`);
+                showStatus('✅ National Administrator account created successfully!', 'success');
+
+                setTimeout(() => {
+                    const credentialsDiv = document.createElement('div');
+                    credentialsDiv.className = 'setup-status success';
+                    credentialsDiv.innerHTML = `
+                        <strong>🎉 Account Setup Complete!</strong><br><br>
+                        <strong>National Administrator Credentials:</strong><br>
+                        Username: <code>${result.username}</code><br>
+                        Password: <code>${result.password}</code><br>
+                        Country: <code>${result.countryName}</code><br><br>
+                        <strong>Account Role:</strong> National Administrator (Unique)<br>
+                        <strong>Security Level:</strong> High<br><br>
+                        <strong>⚠️ Important:</strong> Save these credentials securely.<br><br>
+                        <a href="index.html" style="color: #155724; font-weight: bold;">→ Go to Login Now</a>
+                    `;
+
+                    const existingStatus = document.querySelector('.setup-container .setup-status');
+                    if (existingStatus) {
+                        existingStatus.remove();
+                    }
+
+                    document.querySelector('.setup-container').appendChild(credentialsDiv);
+                }, 800);
+
+            } catch (error) {
+                notificationSystem.addNotification('error', 'Account Creation Failed', error.message);
+                showStatus('❌ ' + error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create National Admin Account';
+            }
+        });
+
+        // Password strength real-time checking
+        document.getElementById('password').addEventListener('input', function() {
+            checkPasswordStrength(this.value, 'passwordStrength');
+        });
+
+        document.getElementById('naPassword').addEventListener('input', function() {
+            checkPasswordStrength(this.value, 'naPasswordStrength');
+        });
+
+        // Update system status display
+        function updateSystemStatus() {
+            const systemAdmins = getSystemAdmins();
+            const nationalAdmins = getNationalAdmins();
+            const totalUsers = getAllUsers().length;
+
+            let statusHtml = '';
+
+            if (systemAdmins.length > 0 && nationalAdmins.length > 0) {
+                statusHtml = `
+                    <span style="color: #10b981;">✅ Complete Setup</span> -
+                    ${systemAdmins.length} System Admin, ${nationalAdmins.length} National Admin (${totalUsers} total user(s))
+                `;
+            } else if (systemAdmins.length > 0) {
+                statusHtml = `
+                    <span style="color: #f59e0b;">⚠️ Partial Setup</span> -
+                    System Admin exists, National Admin needed
+                `;
+            } else if (nationalAdmins.length > 0) {
+                statusHtml = `
+                    <span style="color: #f59e0b;">⚠️ Partial Setup</span> -
+                    National Admin exists, System Admin needed
+                `;
+            } else {
+                statusHtml = `
+                    <span style="color: #ef4444;">❌ No Setup</span> -
+                    No administrator accounts found
+                `;
+            }
+
+            document.getElementById('statusContent').innerHTML = statusHtml;
+        }
+
+        // Notification System
+        class NotificationSystem {
+            constructor() {
+                this.notifications = [];
+                this.notificationBadge = null;
+                this.init();
+            }
+
+            init() {
+                this.createNotificationBadge();
+                this.loadNotifications();
+            }
+
+            createNotificationBadge() {
+                if (!document.getElementById('notificationBadge')) {
+                    const badge = document.createElement('div');
+                    badge.id = 'notificationBadge';
+                    badge.className = 'notification-badge';
+                    badge.innerHTML = '0';
+                    badge.style.display = 'none';
+                    badge.onclick = () => this.showNotificationPanel();
+                    document.body.appendChild(badge);
+                }
+                this.notificationBadge = document.getElementById('notificationBadge');
+            }
+
+            addNotification(type, title, message, data = {}) {
+                const notification = {
+                    id: Date.now() + Math.random(),
+                    type: type,
+                    title: title,
+                    message: message,
+                    data: data,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                };
+
+                this.notifications.unshift(notification);
+                this.saveNotifications();
+                this.updateBadge();
+                this.showToast(notification);
+            }
+
+            showToast(notification) {
+                const toast = document.createElement('div');
+                toast.className = `notification-toast notification-${notification.type}`;
+                toast.innerHTML = `
+                    <div class="toast-header">
+                        <span class="toast-icon">${this.getIcon(notification.type)}</span>
+                        <span class="toast-title">${notification.title}</span>
+                        <button class="toast-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                    </div>
+                    <div class="toast-message">${notification.message}</div>
+                    <div class="toast-time">${new Date(notification.timestamp).toLocaleTimeString()}</div>
+                `;
+
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 5000);
+            }
+
+            getIcon(type) {
+                const icons = {
+                    'success': '✅',
+                    'error': '❌',
+                    'warning': '⚠️',
+                    'info': 'ℹ️',
+                    'system': '🔧'
+                };
+                return icons[type] || '📢';
+            }
+
+            updateBadge() {
+                const unreadCount = this.notifications.filter(n => !n.read).length;
+                if (this.notificationBadge) {
+                    this.notificationBadge.innerHTML = unreadCount;
+                    this.notificationBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+                }
+            }
+
+            showNotificationPanel() {
+                const existing = document.querySelector('.notification-panel');
+                if (existing) existing.remove();
+
+                const panel = document.createElement('div');
+                panel.className = 'notification-panel';
+                panel.innerHTML = `
+                    <div class="panel-header">
+                        <h3>System Notifications</h3>
+                        <button onclick="this.parentElement.parentElement.remove()">×</button>
+                    </div>
+                    <div class="panel-content">
+                        ${this.notifications.length === 0 ? '<div style="padding: 20px; text-align: center; color: #666;">No notifications</div>' : ''}
+                        ${this.notifications.map(n => `
+                            <div class="notification-item ${n.read ? 'read' : 'unread'}" onclick="notificationSystem.markAsRead('${n.id}')">
+                                <div class="notification-icon">${this.getIcon(n.type)}</div>
+                                <div class="notification-content">
+                                    <div class="notification-title">${n.title}</div>
+                                    <div class="notification-message">${n.message}</div>
+                                    <div class="notification-time">${new Date(n.timestamp).toLocaleString()}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="panel-footer">
+                        <button onclick="notificationSystem.clearAll(); this.parentElement.parentElement.remove();">Clear All</button>
+                        <button onclick="notificationSystem.markAllAsRead()">Mark All Read</button>
+                    </div>
+                `;
+
+                document.body.appendChild(panel);
+            }
+
+            markAsRead(id) {
+                const notification = this.notifications.find(n => n.id == id);
+                if (notification) {
+                    notification.read = true;
+                    this.saveNotifications();
+                    this.updateBadge();
+                }
+            }
+
+            markAllAsRead() {
+                this.notifications.forEach(n => n.read = true);
+                this.saveNotifications();
+                this.updateBadge();
+            }
+
+            clearAll() {
+                this.notifications = [];
+                this.saveNotifications();
+                this.updateBadge();
+            }
+
+            saveNotifications() {
+                try {
+                    localStorage.setItem('setupNotifications', JSON.stringify(this.notifications));
+                } catch (error) {
+                    console.error('Error saving notifications:', error);
+                }
+            }
+
+            loadNotifications() {
+                try {
+                    const saved = localStorage.getItem('setupNotifications');
+                    if (saved) {
+                        this.notifications = JSON.parse(saved);
+                        this.updateBadge();
+                    }
+                } catch (error) {
+                    console.error('Error loading notifications:', error);
+                }
+            }
+        }
+
+        const notificationSystem = new NotificationSystem();
+
+        window.onload = function() {
+            checkSetupStatus();
+            updateSystemStatus();
+        };
+    </script>
+</body>
+</html>
