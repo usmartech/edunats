@@ -180,16 +180,6 @@ export const submitSchoolRegistration = createServerFn({ method: "POST" })
       .single();
     if (error || !reg) throw new Error(error?.message ?? "Could not submit the registration");
 
-    const { data: settings } = await supabaseAdmin
-      .from("platform_settings")
-      .select("auto_approve_registrations")
-      .maybeSingle();
-
-    if (settings?.auto_approve_registrations !== false) {
-      const { schoolId } = await server.approveRegistration(reg.id, context.userId);
-      return { status: "approved" as const, registrationId: reg.id, schoolId };
-    }
-
     await server.audit({
       actorId: context.userId,
       action: "school.registration.submitted",
@@ -200,14 +190,19 @@ export const submitSchoolRegistration = createServerFn({ method: "POST" })
     return { status: "pending" as const, registrationId: reg.id, schoolId: null };
   });
 
-/** Oversight admins: approve or reject a pending school registration. */
+/** Oversight admins: review, confirm, approve or reject a school registration.
+ * Flow:
+ * - Regional Admin confirms a pending request -> status becomes "region_confirmed".
+ * - National Admin (or Super Admin) approves a region_confirmed request -> status becomes "approved" and school & super admin role created.
+ * - Any authorized admin can reject a pending or region_confirmed request.
+ */
 export const reviewSchoolRegistration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z
       .object({
         registrationId: z.string().uuid(),
-        decision: z.enum(["approve", "reject"]),
+        decision: z.enum(["confirm", "approve", "reject"]),
         reason: z.string().nullable().default(null),
       })
       .parse(input),
@@ -220,52 +215,82 @@ export const reviewSchoolRegistration = createServerFn({ method: "POST" })
       .eq("id", data.registrationId)
       .maybeSingle();
     if (!reg) throw new Error("Registration not found");
-    if (reg.status !== "pending") throw new Error(`This request was already ${reg.status}.`);
+    if (reg.status === "approved" || reg.status === "rejected") {
+      throw new Error(`This request was already ${reg.status}.`);
+    }
 
-    // Scope check: only an admin whose slice of the hierarchy contains the
-    // requested school may decide on it.
     const { data: isSuper } = await context.supabase.rpc("is_super_admin", {
       _user_id: context.userId,
     });
-    let allowed = Boolean(isSuper);
-    if (!allowed && reg.country_id) {
-      const { data: isNational } = await context.supabase.rpc("is_national_admin", {
-        _user_id: context.userId,
-        _country_id: reg.country_id,
-      });
-      allowed = Boolean(isNational);
-    }
-    if (!allowed && reg.region_id) {
-      const { data: isRegional } = await context.supabase.rpc("is_regional_admin", {
-        _user_id: context.userId,
-        _region_id: reg.region_id,
-      });
-      allowed = Boolean(isRegional);
-    }
-    if (!allowed) throw new Error("Forbidden: this school is outside your scope.");
+    const isNational = reg.country_id
+      ? Boolean(
+          (
+            await context.supabase.rpc("is_national_admin", {
+              _user_id: context.userId,
+              _country_id: reg.country_id,
+            })
+          ).data,
+        )
+      : false;
+    const isRegional = reg.region_id
+      ? Boolean(
+          (
+            await context.supabase.rpc("is_regional_admin", {
+              _user_id: context.userId,
+              _region_id: reg.region_id,
+            })
+          ).data,
+        )
+      : false;
 
     const server = await import("./registration.server");
+
+    if (data.decision === "confirm") {
+      // Regional confirmation: permitted for Regional, National or Super Admins when status is 'pending'
+      if (!isSuper && !isNational && !isRegional) {
+        throw new Error("Forbidden: Regional confirmation required.");
+      }
+      if (reg.status !== "pending") {
+        throw new Error("Only pending registration requests can be confirmed.");
+      }
+      return await server.confirmRegistration(data.registrationId, context.userId);
+    }
+
     if (data.decision === "approve") {
+      // National approval: permitted for National or Super Admins
+      if (!isSuper && !isNational) {
+        throw new Error("Forbidden: National approval required.");
+      }
+      if (reg.status !== "region_confirmed") {
+        throw new Error("Only region confirmed registration requests can be approved.");
+      }
       return await server.approveRegistration(data.registrationId, context.userId);
     }
 
-    await supabaseAdmin
-      .from("school_registrations")
-      .update({
-        status: "rejected",
-        rejection_reason: data.reason,
-        reviewed_by: context.userId,
-        reviewed_at: new Date().toISOString(),
-      })
-      .eq("id", data.registrationId);
-    await server.audit({
-      actorId: context.userId,
-      action: "school.registration.rejected",
-      scope: "platform",
-      targetTable: "school_registrations",
-      targetId: data.registrationId,
-      detail: { reason: data.reason },
-    });
-    return { schoolId: null };
+    if (data.decision === "reject") {
+      if (!isSuper && !isNational && !isRegional) {
+        throw new Error("Forbidden: this school is outside your scope.");
+      }
+      await supabaseAdmin
+        .from("school_registrations")
+        .update({
+          status: "rejected",
+          rejection_reason: data.reason,
+          reviewed_by: context.userId,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", data.registrationId);
+      await server.audit({
+        actorId: context.userId,
+        action: "school.registration.rejected",
+        scope: "platform",
+        targetTable: "school_registrations",
+        targetId: data.registrationId,
+        detail: { reason: data.reason },
+      });
+      return { schoolId: null };
+    }
+
+    throw new Error("Invalid decision");
   });
 

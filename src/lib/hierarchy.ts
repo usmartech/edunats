@@ -67,6 +67,8 @@ export type RegistrationRow = {
   status: string;
   created_at: string;
   reviewed_at: string | null;
+  confirmed_at: string | null;
+  confirmed_by: string | null;
   rejection_reason: string | null;
   requested_by: string;
 };
@@ -123,7 +125,7 @@ export async function fetchRegistrations(
   let query = supabase
     .from("school_registrations")
     .select(
-      "id, school_name, proposed_code, country_id, region_id, district, status, created_at, reviewed_at, rejection_reason, requested_by",
+      "id, school_name, proposed_code, country_id, region_id, district, status, created_at, reviewed_at, confirmed_at, confirmed_by, rejection_reason, requested_by",
     )
     .order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
