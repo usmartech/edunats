@@ -303,7 +303,7 @@ function EditableRow({
   name: string;
   code: string;
   active: boolean;
-  countryLabel?: string;
+  countryLabel?: string | undefined;
   onSave: (name: string, code: string, active: boolean) => Promise<unknown>;
   onDelete?: () => Promise<unknown>;
 }) {
