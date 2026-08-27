@@ -100,17 +100,17 @@ describe("Array and Object Utilities", () => {
       { category: "veggie", name: "carrot" },
     ];
     const grouped = groupBy(list, "category");
-    expect(grouped.fruit.length).toBe(2);
-    expect(grouped.veggie.length).toBe(1);
+    expect(grouped['fruit']?.length).toBe(2);
+    expect(grouped['veggie']?.length).toBe(1);
   });
 
   test("sortBy", () => {
     const list = [{ age: 30 }, { age: 20 }, { age: 25 }];
     const sortedAsc = sortBy(list, "age", "asc");
-    expect(sortedAsc[0].age).toBe(20);
+    expect(sortedAsc[0]?.age).toBe(20);
 
     const sortedDesc = sortBy(list, "age", "desc");
-    expect(sortedDesc[0].age).toBe(30);
+    expect(sortedDesc[0]?.age).toBe(30);
   });
 
   test("filterBy", () => {
@@ -120,7 +120,7 @@ describe("Array and Object Utilities", () => {
     ];
     const filtered = filterBy(list, { name: "jo" });
     expect(filtered.length).toBe(1);
-    expect(filtered[0].name).toBe("John");
+    expect(filtered[0]?.name).toBe("John");
   });
 });
 

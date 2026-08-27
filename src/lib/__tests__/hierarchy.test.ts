@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { DEFAULT_COUNTRY, GHANA_16_REGIONS } from "../hierarchy";
 
 describe("Ghana Country and Regions Hierarchy", () => {
