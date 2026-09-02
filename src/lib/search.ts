@@ -22,11 +22,11 @@ export const SEARCH_DOMAINS = [
 export type SearchDomainKey = (typeof SEARCH_DOMAINS)[number]["key"];
 
 export type SearchCriteria = {
-  term?: string;
-  domain?: SearchDomainKey | "schools" | "";
-  startDate?: string;
-  endDate?: string;
-  status?: string;
+  term?: string | undefined;
+  domain?: SearchDomainKey | "schools" | "" | undefined;
+  startDate?: string | undefined;
+  endDate?: string | undefined;
+  status?: string | undefined;
 };
 
 export type SearchHit = {
