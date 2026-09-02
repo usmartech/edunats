@@ -164,7 +164,15 @@ function PortalPage() {
             variant="outline"
             className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
             onClick={() => {
-              void signOutPortal(cloud).then(() => navigate({ to: "/", replace: true }));
+              void logActivity({
+                action: "user.signed_out",
+                scope: "school",
+                scopeId: session.schoolId ?? null,
+                detail: { message: `${session.fullName} signed out` },
+              })
+                .catch(() => undefined)
+                .then(() => signOutPortal(cloud))
+                .then(() => navigate({ to: "/", replace: true }));
             }}
           >
             Sign out
