@@ -182,6 +182,14 @@ function PortalPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-10">
+        <DashboardWidgets
+          role={session.role}
+          fullName={session.fullName}
+          accessLevel={session.accessLevel}
+          moduleCount={mine.length}
+          schoolId={session.schoolId ?? null}
+        />
+
         {MODULE_GROUPS.map((group) => {
           const items = mine.filter((m) => m.group === group);
           if (!items.length) return null;
