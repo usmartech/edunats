@@ -1,6 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { signOutPlatform, type PlatformIdentity } from "@/lib/platform";
+import { NotificationCenter } from "@/components/NotificationCenter";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { logActivity } from "@/lib/activity";
 
 /**
  * Every dashboard is titled by its own place in the hierarchy: the school
