@@ -10,6 +10,10 @@ import { setActiveSchoolId } from "@/lib/platform";
 import { MODULE_GROUPS, MODULE_REGISTRY, schoolModules } from "@/lib/modules";
 import { setTenantContext } from "@/lib/data/tenant";
 import { ensureSeeded, getSettings, listSchools, type School } from "@/lib/tenancy";
+import { NotificationCenter } from "@/components/NotificationCenter";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { DashboardWidgets } from "@/components/DashboardWidgets";
+import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/portal")({
   head: () => ({
@@ -130,7 +134,9 @@ function PortalPage() {
                 : session.schoolName ?? "No school selected"}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+          <GlobalSearch schoolId={session.schoolId ?? null} />
+          <NotificationCenter scopeId={session.schoolId ?? null} />
           {session.role === "super-admin" && schools.length > 0 && (
             <select
               aria-label="Switch school"
@@ -158,7 +164,15 @@ function PortalPage() {
             variant="outline"
             className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
             onClick={() => {
-              void signOutPortal(cloud).then(() => navigate({ to: "/", replace: true }));
+              void logActivity({
+                action: "user.signed_out",
+                scope: "school",
+                scopeId: session.schoolId ?? null,
+                detail: { message: `${session.fullName} signed out` },
+              })
+                .catch(() => undefined)
+                .then(() => signOutPortal(cloud))
+                .then(() => navigate({ to: "/", replace: true }));
             }}
           >
             Sign out
@@ -168,6 +182,14 @@ function PortalPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-10">
+        <DashboardWidgets
+          role={session.role}
+          fullName={session.fullName}
+          accessLevel={session.accessLevel}
+          moduleCount={mine.length}
+          schoolId={session.schoolId ?? null}
+        />
+
         {MODULE_GROUPS.map((group) => {
           const items = mine.filter((m) => m.group === group);
           if (!items.length) return null;

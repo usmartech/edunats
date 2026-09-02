@@ -1,6 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { signOutPlatform, type PlatformIdentity } from "@/lib/platform";
+import { NotificationCenter } from "@/components/NotificationCenter";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { logActivity } from "@/lib/activity";
 
 /**
  * Every dashboard is titled by its own place in the hierarchy: the school
@@ -57,11 +60,25 @@ export function ScopeHeader({
           )}
           {children}
 
+          <GlobalSearch
+            oversight
+            scope={{ countryId: identity.countryId, regionId: identity.regionId }}
+          />
+          <NotificationCenter scopeId={identity.activeSchoolId ?? null} />
+
           <Button
             variant="outline"
             className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
             onClick={() => {
-              void signOutPlatform().then(() => navigate({ to: "/", replace: true }));
+              void logActivity({
+                action: "user.signed_out",
+                scope: identity.scope,
+                scopeId: identity.activeSchoolId ?? null,
+                detail: { message: `${identity.fullName ?? identity.email} signed out` },
+              })
+                .catch(() => undefined)
+                .then(() => signOutPlatform())
+                .then(() => navigate({ to: "/", replace: true }));
             }}
           >
             Sign out
