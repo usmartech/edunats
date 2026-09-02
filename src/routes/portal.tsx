@@ -134,7 +134,9 @@ function PortalPage() {
                 : session.schoolName ?? "No school selected"}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+          <GlobalSearch schoolId={session.schoolId ?? null} />
+          <NotificationCenter scopeId={session.schoolId ?? null} />
           {session.role === "super-admin" && schools.length > 0 && (
             <select
               aria-label="Switch school"
