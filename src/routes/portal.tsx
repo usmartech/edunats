@@ -10,6 +10,10 @@ import { setActiveSchoolId } from "@/lib/platform";
 import { MODULE_GROUPS, MODULE_REGISTRY, schoolModules } from "@/lib/modules";
 import { setTenantContext } from "@/lib/data/tenant";
 import { ensureSeeded, getSettings, listSchools, type School } from "@/lib/tenancy";
+import { NotificationCenter } from "@/components/NotificationCenter";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { DashboardWidgets } from "@/components/DashboardWidgets";
+import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/portal")({
   head: () => ({
