@@ -43,13 +43,24 @@ function RegisterSchoolPage() {
   const navigate = useNavigate();
   const [countries, setCountries] = useState<Country[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
+  const [mmdas, setMmdas] = useState<GeoUnit[]>([]);
+  const [subMetros, setSubMetros] = useState<GeoUnit[]>([]);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
     schoolName: "",
     proposedCode: "",
     countryId: "",
     regionId: "",
+    mmdaId: "",
+    subMetroId: "",
+    localityName: "",
     district: "",
+    postalAddress: "",
+    nearestLandmark: "",
+    areaCommunity: "",
+    gpsLat: "",
+    gpsLng: "",
+    digitalAddress: "",
     typeCode: "public",
     contactPhone: "",
   });
@@ -64,6 +75,18 @@ function RegisterSchoolPage() {
     else setRegions([]);
   }, [form.countryId]);
 
+  // MMDAs of the selected region (GSS 2021 PHC administrative geography).
+  useEffect(() => {
+    if (form.regionId) void fetchGeoUnits("MMDA", { regionId: form.regionId }).then(setMmdas);
+    else setMmdas([]);
+  }, [form.regionId]);
+
+  // Sub-metros only exist under some metropolitan assemblies.
+  useEffect(() => {
+    if (form.mmdaId) void fetchGeoUnits("SUBMETRO", { parentId: form.mmdaId }).then(setSubMetros);
+    else setSubMetros([]);
+  }, [form.mmdaId]);
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!identity) {
@@ -73,19 +96,32 @@ function RegisterSchoolPage() {
     }
     setBusy(true);
     try {
-      const result = await register({
+      const selectedMmda = mmdas.find((m) => m.id === form.mmdaId);
+      await register({
         data: {
           schoolName: form.schoolName,
           proposedCode: form.proposedCode,
           countryId: form.countryId,
           regionId: form.regionId || null,
-          district: form.district || null,
+          mmdaId: form.mmdaId || null,
+          subMetroId: form.subMetroId || null,
+          localityId: null,
+          localityName: form.localityName || null,
+          district: form.district || selectedMmda?.name || null,
+          postalAddress: form.postalAddress,
+          nearestLandmark: form.nearestLandmark,
+          areaCommunity: form.areaCommunity || null,
+          gpsLat: form.gpsLat ? Number(form.gpsLat) : null,
+          gpsLng: form.gpsLng ? Number(form.gpsLng) : null,
+          digitalAddress: form.digitalAddress || null,
           typeCode: form.typeCode,
           levelCodes: [],
           contactPhone: form.contactPhone || null,
         },
       });
-      toast.success("School registration submitted. It has been sent to your regional administrator for review & confirmation.");
+      toast.success(
+        "School registration submitted. It has been sent to your regional administrator for review & confirmation.",
+      );
       void navigate({ to: "/" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not register the school");
@@ -93,6 +129,7 @@ function RegisterSchoolPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
