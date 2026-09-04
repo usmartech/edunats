@@ -128,7 +128,7 @@ export function useActivityFeed(scopeId?: string | null, limit = 25) {
   useEffect(() => {
     void reload();
     const channel = supabase
-      .channel("audit-feed")
+      .channel(`audit-feed-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "audit_log" },
