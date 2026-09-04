@@ -151,7 +151,17 @@ export const submitSchoolRegistration = createServerFn({ method: "POST" })
         proposedCode: z.string().min(2).max(24),
         countryId: z.string().uuid(),
         regionId: z.string().uuid().nullable().default(null),
+        mmdaId: z.string().uuid().nullable().default(null),
+        subMetroId: z.string().uuid().nullable().default(null),
+        localityId: z.string().uuid().nullable().default(null),
+        localityName: z.string().nullable().default(null),
         district: z.string().nullable().default(null),
+        postalAddress: z.string().min(3),
+        nearestLandmark: z.string().min(2),
+        areaCommunity: z.string().nullable().default(null),
+        gpsLat: z.number().nullable().default(null),
+        gpsLng: z.number().nullable().default(null),
+        digitalAddress: z.string().nullable().default(null),
         typeCode: z.string().default("public"),
         levelCodes: z.array(z.string()).default([]),
         contactPhone: z.string().nullable().default(null),
@@ -169,7 +179,17 @@ export const submitSchoolRegistration = createServerFn({ method: "POST" })
         proposed_code: data.proposedCode.toUpperCase(),
         country_id: data.countryId,
         region_id: data.regionId,
+        mmda_id: data.mmdaId,
+        sub_metro_id: data.subMetroId,
+        locality_id: data.localityId,
+        locality_name: data.localityName,
         district: data.district,
+        postal_address: data.postalAddress,
+        nearest_landmark: data.nearestLandmark,
+        area_community: data.areaCommunity,
+        gps_lat: data.gpsLat,
+        gps_lng: data.gpsLng,
+        digital_address: data.digitalAddress,
         type_code: data.typeCode,
         level_codes: data.levelCodes,
         contact_phone: data.contactPhone,
@@ -179,6 +199,7 @@ export const submitSchoolRegistration = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error || !reg) throw new Error(error?.message ?? "Could not submit the registration");
+
 
     await server.audit({
       actorId: context.userId,
