@@ -5,9 +5,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePlatformIdentity, setActiveSchoolId } from "@/lib/platform";
-import { fetchCountries, fetchRegions, type Country, type Region } from "@/lib/hierarchy";
+import { usePlatformIdentity } from "@/lib/platform";
+import {
+  fetchCountries,
+  fetchRegions,
+  fetchGeoUnits,
+  type Country,
+  type Region,
+  type GeoUnit,
+} from "@/lib/hierarchy";
 import { submitSchoolRegistration } from "@/lib/registration.functions";
+
 
 export const Route = createFileRoute("/register-school")({
   head: () => ({
