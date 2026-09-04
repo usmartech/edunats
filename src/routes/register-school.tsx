@@ -5,9 +5,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePlatformIdentity, setActiveSchoolId } from "@/lib/platform";
-import { fetchCountries, fetchRegions, type Country, type Region } from "@/lib/hierarchy";
+import { usePlatformIdentity } from "@/lib/platform";
+import {
+  fetchCountries,
+  fetchRegions,
+  fetchGeoUnits,
+  type Country,
+  type Region,
+  type GeoUnit,
+} from "@/lib/hierarchy";
 import { submitSchoolRegistration } from "@/lib/registration.functions";
+
 
 export const Route = createFileRoute("/register-school")({
   head: () => ({
@@ -35,13 +43,24 @@ function RegisterSchoolPage() {
   const navigate = useNavigate();
   const [countries, setCountries] = useState<Country[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
+  const [mmdas, setMmdas] = useState<GeoUnit[]>([]);
+  const [subMetros, setSubMetros] = useState<GeoUnit[]>([]);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
     schoolName: "",
     proposedCode: "",
     countryId: "",
     regionId: "",
+    mmdaId: "",
+    subMetroId: "",
+    localityName: "",
     district: "",
+    postalAddress: "",
+    nearestLandmark: "",
+    areaCommunity: "",
+    gpsLat: "",
+    gpsLng: "",
+    digitalAddress: "",
     typeCode: "public",
     contactPhone: "",
   });
@@ -56,6 +75,18 @@ function RegisterSchoolPage() {
     else setRegions([]);
   }, [form.countryId]);
 
+  // MMDAs of the selected region (GSS 2021 PHC administrative geography).
+  useEffect(() => {
+    if (form.regionId) void fetchGeoUnits("MMDA", { regionId: form.regionId }).then(setMmdas);
+    else setMmdas([]);
+  }, [form.regionId]);
+
+  // Sub-metros only exist under some metropolitan assemblies.
+  useEffect(() => {
+    if (form.mmdaId) void fetchGeoUnits("SUBMETRO", { parentId: form.mmdaId }).then(setSubMetros);
+    else setSubMetros([]);
+  }, [form.mmdaId]);
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!identity) {
@@ -65,19 +96,32 @@ function RegisterSchoolPage() {
     }
     setBusy(true);
     try {
-      const result = await register({
+      const selectedMmda = mmdas.find((m) => m.id === form.mmdaId);
+      await register({
         data: {
           schoolName: form.schoolName,
           proposedCode: form.proposedCode,
           countryId: form.countryId,
           regionId: form.regionId || null,
-          district: form.district || null,
+          mmdaId: form.mmdaId || null,
+          subMetroId: form.subMetroId || null,
+          localityId: null,
+          localityName: form.localityName || null,
+          district: form.district || selectedMmda?.name || null,
+          postalAddress: form.postalAddress,
+          nearestLandmark: form.nearestLandmark,
+          areaCommunity: form.areaCommunity || null,
+          gpsLat: form.gpsLat ? Number(form.gpsLat) : null,
+          gpsLng: form.gpsLng ? Number(form.gpsLng) : null,
+          digitalAddress: form.digitalAddress || null,
           typeCode: form.typeCode,
           levelCodes: [],
           contactPhone: form.contactPhone || null,
         },
       });
-      toast.success("School registration submitted. It has been sent to your regional administrator for review & confirmation.");
+      toast.success(
+        "School registration submitted. It has been sent to your regional administrator for review & confirmation.",
+      );
       void navigate({ to: "/" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not register the school");
@@ -85,6 +129,7 @@ function RegisterSchoolPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
@@ -155,9 +200,12 @@ function RegisterSchoolPage() {
                 id="region"
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={form.regionId}
-                onChange={(e) => setForm({ ...form, regionId: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, regionId: e.target.value, mmdaId: "", subMetroId: "" })
+                }
+                required
               >
-                <option value="">Not listed</option>
+                <option value="">Select region…</option>
                 {regions.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.name}
@@ -166,11 +214,107 @@ function RegisterSchoolPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="district">District</Label>
+              <Label htmlFor="mmda">District assembly (MMDA)</Label>
+              <select
+                id="mmda"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={form.mmdaId}
+                onChange={(e) => setForm({ ...form, mmdaId: e.target.value, subMetroId: "" })}
+                disabled={mmdas.length === 0}
+                required
+              >
+                <option value="">
+                  {form.regionId ? "Select assembly…" : "Choose a region first"}
+                </option>
+                {mmdas.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.unit_type})
+                  </option>
+                ))}
+              </select>
+            </div>
+            {subMetros.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="submetro">Sub-metropolitan district</Label>
+                <select
+                  id="submetro"
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  value={form.subMetroId}
+                  onChange={(e) => setForm({ ...form, subMetroId: e.target.value })}
+                >
+                  <option value="">Not applicable</option>
+                  {subMetros.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="locality">Locality / town</Label>
               <Input
-                id="district"
-                value={form.district}
-                onChange={(e) => setForm({ ...form, district: e.target.value })}
+                id="locality"
+                value={form.localityName}
+                onChange={(e) => setForm({ ...form, localityName: e.target.value })}
+                placeholder="e.g. Adenta Housing Down"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="postalAddress">Postal address *</Label>
+              <Input
+                id="postalAddress"
+                value={form.postalAddress}
+                onChange={(e) => setForm({ ...form, postalAddress: e.target.value })}
+                placeholder="e.g. P.O. Box AD 145, Adenta"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="landmark">Nearest landmark *</Label>
+              <Input
+                id="landmark"
+                value={form.nearestLandmark}
+                onChange={(e) => setForm({ ...form, nearestLandmark: e.target.value })}
+                placeholder="e.g. Opposite Adenta Police Station"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="area">Area / suburb / community</Label>
+              <Input
+                id="area"
+                value={form.areaCommunity}
+                onChange={(e) => setForm({ ...form, areaCommunity: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="digital">Digital address (GhanaPostGPS)</Label>
+              <Input
+                id="digital"
+                value={form.digitalAddress}
+                onChange={(e) => setForm({ ...form, digitalAddress: e.target.value })}
+                placeholder="e.g. GA-183-4290"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lat">GPS latitude</Label>
+              <Input
+                id="lat"
+                inputMode="decimal"
+                value={form.gpsLat}
+                onChange={(e) => setForm({ ...form, gpsLat: e.target.value })}
+                placeholder="5.6037"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lng">GPS longitude</Label>
+              <Input
+                id="lng"
+                inputMode="decimal"
+                value={form.gpsLng}
+                onChange={(e) => setForm({ ...form, gpsLng: e.target.value })}
+                placeholder="-0.1870"
               />
             </div>
             <div className="space-y-2">
@@ -182,6 +326,7 @@ function RegisterSchoolPage() {
               />
             </div>
           </div>
+
           <Button type="submit" className="w-full" disabled={busy || !identity}>
             {busy ? "Registering…" : "Register school"}
           </Button>

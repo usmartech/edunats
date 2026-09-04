@@ -101,6 +101,45 @@ export async function fetchRegions(countryId?: string | null): Promise<Region[]>
   return data ?? [];
 }
 
+/* -------------------------- geo master data ------------------------- */
+
+export type GeoUnit = {
+  id: string;
+  code: string;
+  name: string;
+  unit_type: string;
+  capital: string | null;
+  parent_id: string | null;
+  region_id: string | null;
+  country_id: string;
+  active: boolean;
+};
+
+const GEO_COLUMNS = "id, code, name, unit_type, capital, parent_id, region_id, country_id, active";
+
+/** Geo units for one level (REGION | MMDA | SUBMETRO | LOCALITY), optionally under a parent. */
+export async function fetchGeoUnits(
+  levelCode: "REGION" | "MMDA" | "SUBMETRO" | "LOCALITY",
+  filter?: { parentId?: string | null; regionId?: string | null; countryId?: string | null },
+): Promise<GeoUnit[]> {
+  const levels = await supabase.from("geo_levels").select("id, code, country_id").eq("code", levelCode);
+  const levelIds = (levels.data ?? []).map((l) => l.id);
+  if (levelIds.length === 0) return [];
+
+  let query = supabase
+    .from("geo_units")
+    .select(GEO_COLUMNS)
+    .in("level_id", levelIds)
+    .eq("active", true)
+    .order("name");
+  if (filter?.parentId) query = query.eq("parent_id", filter.parentId);
+  if (filter?.regionId) query = query.eq("region_id", filter.regionId);
+  if (filter?.countryId) query = query.eq("country_id", filter.countryId);
+  const { data } = await query;
+  return data ?? [];
+}
+
+
 export async function fetchSchools(filter?: {
   countryId?: string | null;
   regionId?: string | null;
